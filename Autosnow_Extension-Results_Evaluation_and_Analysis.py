@@ -534,7 +534,6 @@ def plot_2d_hit_miss_map(cat_arr,area,clrmp,nbs):
     cbar_miss.ax.tick_params(size=0)
     cbar_miss.set_label('Miss [%]', rotation=0, labelpad=-40)
 
-
 #----------------------------------------------------------
 
 def find_relevant_monday(input_date_str):
@@ -922,8 +921,6 @@ def cat_metrcs_computed(sym_lst,org_lst):
     all_cat_df.sort_values(by='Class',ascending=False,inplace=True)
     return all_cat_df
 
-
-
 #-----------------------------------------------------------------------------------
 def plot_time_series(area_extent_df):
     # Define colors for each model or dataset
@@ -1225,9 +1222,9 @@ def plot_percent_hit_mis(arrs2plot,ext,ytcks):
         a.set_yticks(ytcks)    # y-axis from -90 to 90 at intervals of 5       
 
 #----------------------------------------------------------------------------------------
-# def process_file(file_path):
-for l in sorted(all_autosnow_files[:100]):   
-    file_path = l
+def process_file(file_path):
+# for l in sorted(all_autosnow_files[:100]):   
+#     file_path = l
 
     yr_DOY = os.path.basename(file_path).split('_')[4]
 
@@ -1251,19 +1248,19 @@ for l in sorted(all_autosnow_files[:100]):
     # read files
     # estimates 
     ml_e_estimated_arr = read_processed_files(path_to_estimated_autosnw, 
-                                              'RF_estimated_autosnow_using_only_ERA5_data',
-                                              yr_DOY,'0.1deg_wgs')
+                                              ['RF_estimated_autosnow_using_only_ERA5_data',
+                                              yr_DOY,'0.1deg_wgs'],'.tif')
     ml_ec_estimated_arr = read_processed_files(path_to_estimated_autosnw, 
-                                               'RF_estimated_autosnow_using_alldataclim',
-                                              yr_DOY,'0.1deg_wgs')
+                                               ['RF_estimated_autosnow_using_alldataclim',
+                                              yr_DOY,'0.1deg_wgs'],'.tif')
     
     ml_ecc_estimated_arr = read_processed_files(path_to_estimated_autosnw,
-                                                'corrected_RF_estimated_autosnow_using_alldataclim',
-                                                yr_DOY,'0.1deg_wgs')
+                                                ['corrected_RF_estimated_autosnow_using_alldataclim',
+                                                yr_DOY,'0.1deg_wgs'],'.tif')
     
     climatology_estimated_arr = read_processed_files(path_to_clim_only_autosnw_estimated, 
-                                                     'alldata_1992_2022_clim_subsetted_by_airTemp',
-                                              yr_DOY,'0.1deg_wgs')
+                                                     ['alldata_1992_2022_clim_subsetted_by_airTemp',
+                                              yr_DOY,'0.1deg_wgs'],'.tif')
     
     # the original autosnow data
     gmais_dat = xr.open_dataarray(file_path) 
@@ -1280,149 +1277,14 @@ for l in sorted(all_autosnow_files[:100]):
     get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_ec_estimated_arr, 'ML-EC', date_time, integer_list)
     get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_ecc_estimated_arr, 'ML-ECC', date_time, integer_list)
     get_percent_hitmiss(hit_miss_df, gmasi_dat_array, climatology_estimated_arr, 'CLIM', date_time, integer_list)
-    # hit_miss_df.loc[date_time,'ML-E-GMASI-hit'] = round((ml_e_gmasi_hits/ml_e_gmasi_count)*100,2)
-    # hit_miss_df.loc[date_time,'ML-E-GMASI-miss'] = round((ml_e_gmasi_miss/ml_e_gmasi_count)*100,2)    
-    # hit_miss_df.loc[date_time,'ML-EC-GMASI-hit'] = round((ml_ec_gmasi_hits/ml_ec_gmasi_count)*100,2)
-    # hit_miss_df.loc[date_time,'ML-EC-GMASI-miss'] = round((ml_ec_gmasi_miss/ml_ec_gmasi_count)*100,2)
-    # hit_miss_df.loc[date_time,'Climatology-GMASI-hit'] = round((climatology_gmasi_hits/climatology_gmasi_count)*100,2)
-    # hit_miss_df.loc[date_time,'Climatology-GMASI-miss'] = round((climatology_gmasi_miss/climatology_gmasi_count)*100,2)
-    # hit_miss_df.loc[date_time,'ML-ECC-GMASI-hit'] = round((ml_ecc_gmasi_hits/ml_ecc_gmasi_count)*100,2)
-    # hit_miss_df.loc[date_time,'ML-ECC-GMASI-miss'] = round((ml_ecc_gmasi_miss/ml_ecc_gmasi_count)*100,2)    
+      
     #------------------------------------------------------
 
     # do hit/miss in % per class
     df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_e_estimated_arr, date_time, 'ML-E')
     df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_ec_estimated_arr, date_time, 'ML-EC')
     df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_ecc_estimated_arr, date_time, 'ML-ECC')
-    df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, climatology_estimated_arr, date_time, 'CLIM')
-
-    # ml_e_wtr_hit = np.sum((ml_e_gmasi_flat[:,0] == 0) & (ml_e_gmasi_flat[:,1] == 0))
-    # ml_e_wtr_miss = np.sum((ml_e_gmasi_flat[:,0] == 0) & (ml_e_gmasi_flat[:,1] != 0))
-    # ml_e_wtr_cnt = ml_e_wtr_hit + ml_e_wtr_miss
-    # hit_miss_df.loc[date_time,'ML-E-wter-hit']  = round((ml_e_wtr_hit/ml_e_wtr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-E-wter-miss']  = round((ml_e_wtr_miss/ml_e_wtr_cnt)*100,2) 
-
-    # ml_e_snfr_hit = np.sum((ml_e_gmasi_flat[:,0] == 1) & (ml_e_gmasi_flat[:,1] == 1))
-    # ml_e_snfr_miss = np.sum((ml_e_gmasi_flat[:,0] == 1) & (ml_e_gmasi_flat[:,1] != 1))
-    # ml_e_snfr_cnt = ml_e_snfr_hit + ml_e_snfr_miss
-    # hit_miss_df.loc[date_time,'ML-E-snflnd-hit']  = round((ml_e_snfr_hit/ml_e_snfr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-E-snflnd-miss']  = round((ml_e_snfr_miss/ml_e_snfr_cnt)*100,2) 
-
-    # ml_e_snc_hit = np.sum((ml_e_gmasi_flat[:,0] == 2) & (ml_e_gmasi_flat[:,1] == 2))
-    # ml_e_snc_miss = np.sum((ml_e_gmasi_flat[:,0] == 2) & (ml_e_gmasi_flat[:,1] != 2))
-    # ml_e_snc_cnt = ml_e_snc_hit + ml_e_snc_miss
-    # hit_miss_df.loc[date_time,'ML-E-snclnd-hit']  = round((ml_e_snc_hit/ml_e_snc_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-E-snclnd-miss']  = round((ml_e_snc_miss/ml_e_snc_cnt)*100,2) 
-
-    # ml_e_ice_hit = np.sum((ml_e_gmasi_flat[:,0] == 3) & (ml_e_gmasi_flat[:,1] == 3))
-    # ml_e_ice_miss = np.sum((ml_e_gmasi_flat[:,0] == 3) & (ml_e_gmasi_flat[:,1] != 3))
-    # ml_e_ice_cnt = ml_e_ice_hit + ml_e_ice_miss
-    # hit_miss_df.loc[date_time,'ML-E-ice-hit']  = round((ml_e_ice_hit/ml_e_ice_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-E-ice-miss']  = round((ml_e_ice_miss/ml_e_ice_cnt)*100,2) 
-
-    #------------------------------------------------------
-
-    # ml_ec_wtr_hit = np.sum((ml_ec_gmasi_flat[:,0] == 0) & (ml_ec_gmasi_flat[:,1] == 0))
-    # ml_ec_wtr_miss = np.sum((ml_ec_gmasi_flat[:,0] == 0) & (ml_ec_gmasi_flat[:,1] != 0))
-    # ml_ec_wtr_cnt = ml_ec_wtr_hit + ml_ec_wtr_miss
-    # hit_miss_df.loc[date_time,'ML-EC-wter-hit']  = round((ml_ec_wtr_hit/ml_ec_wtr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-EC-wter-miss']  = round((ml_ec_wtr_miss/ml_ec_wtr_cnt)*100,2) 
-
-    # ml_ec_snfr_hit = np.sum((ml_ec_gmasi_flat[:,0] == 1) & (ml_ec_gmasi_flat[:,1] == 1))
-    # ml_ec_snfr_miss = np.sum((ml_ec_gmasi_flat[:,0] == 1) & (ml_ec_gmasi_flat[:,1] != 1))
-    # ml_ec_snfr_cnt = ml_ec_snfr_hit + ml_ec_snfr_miss
-    # hit_miss_df.loc[date_time,'ML-EC-snflnd-hit']  = round((ml_ec_snfr_hit/ml_ec_snfr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-EC-snflnd-miss']  = round((ml_ec_snfr_miss/ml_ec_snfr_cnt)*100,2) 
-
-    # ml_ec_snc_hit = np.sum((ml_ec_gmasi_flat[:,0] == 2) & (ml_ec_gmasi_flat[:,1] == 2))
-    # ml_ec_snc_miss = np.sum((ml_ec_gmasi_flat[:,0] == 2) & (ml_ec_gmasi_flat[:,1] != 2))
-    # ml_ec_snc_cnt = ml_ec_snc_hit + ml_ec_snc_miss
-    # hit_miss_df.loc[date_time,'ML-EC-snclnd-hit']  = round((ml_ec_snc_hit/ml_ec_snc_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-EC-snclnd-miss']  = round((ml_ec_snc_miss/ml_ec_snc_cnt)*100,2) 
-
-    # ml_ec_ice_hit = np.sum((ml_ec_gmasi_flat[:,0] == 3) & (ml_ec_gmasi_flat[:,1] == 3))
-    # ml_ec_ice_miss = np.sum((ml_ec_gmasi_flat[:,0] == 3) & (ml_ec_gmasi_flat[:,1] != 3))
-    # ml_ec_ice_cnt = ml_ec_ice_hit + ml_ec_ice_miss
-    # hit_miss_df.loc[date_time,'ML-EC-ice-hit']  = round((ml_ec_ice_hit/ml_ec_ice_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-EC-ice-miss']  = round((ml_ec_ice_miss/ml_ec_ice_cnt)*100,2) 
-
-    #------------------------------------------------------
-
-    # climatology_wtr_hit = np.sum((climatology_gmasi_flat[:,0] == 0) & (climatology_gmasi_flat[:,1] == 0))
-    # climatology_wtr_miss = np.sum((climatology_gmasi_flat[:,0] == 0) & (climatology_gmasi_flat[:,1] != 0))
-    # climatology_wtr_cnt = climatology_wtr_hit + climatology_wtr_miss
-    # hit_miss_df.loc[date_time,'Climatology-wter-hit']  = round((climatology_wtr_hit/climatology_wtr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'Climatology-wter-miss']  = round((climatology_wtr_miss/climatology_wtr_cnt)*100,2) 
-
-    # climatology_snfr_hit = np.sum((climatology_gmasi_flat[:,0] == 1) & (climatology_gmasi_flat[:,1] == 1))
-    # climatology_snfr_miss = np.sum((climatology_gmasi_flat[:,0] == 1) & (climatology_gmasi_flat[:,1] != 1))
-    # climatology_snfr_cnt = climatology_snfr_hit + climatology_snfr_miss
-    # hit_miss_df.loc[date_time,'Climatology-snflnd-hit']  = round((climatology_snfr_hit/climatology_snfr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'Climatology-snflnd-miss']  = round((climatology_snfr_miss/climatology_snfr_cnt)*100,2) 
-
-    # climatology_snc_hit = np.sum((climatology_gmasi_flat[:,0] == 2) & (climatology_gmasi_flat[:,1] == 2))
-    # climatology_snc_miss = np.sum((climatology_gmasi_flat[:,0] == 2) & (climatology_gmasi_flat[:,1] != 2))
-    # climatology_snc_cnt = climatology_snc_hit + climatology_snc_miss
-    # hit_miss_df.loc[date_time,'Climatology-snclnd-hit']  = round((climatology_snc_hit/climatology_snc_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'Climatology-snclnd-miss']  = round((climatology_snc_miss/climatology_snc_cnt)*100,2) 
-
-    # climatology_ice_hit = np.sum((climatology_gmasi_flat[:,0] == 3) & (climatology_gmasi_flat[:,1] == 3))
-    # climatology_ice_miss = np.sum((climatology_gmasi_flat[:,0] == 3) & (climatology_gmasi_flat[:,1] != 3))
-    # climatology_ice_cnt = climatology_ice_hit + climatology_ice_miss
-    # hit_miss_df.loc[date_time,'Climatology-ice-hit']  = round((climatology_ice_hit/climatology_ice_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'Climatology-ice-miss']  = round((climatology_ice_miss/climatology_ice_cnt)*100,2) 
-
-    #------------------------------------------------------
-
-    # ml_ecc_wtr_hit = np.sum((ml_ecc_gmasi_flat[:,0] == 0) & (ml_ecc_gmasi_flat[:,1] == 0))
-    # ml_ecc_wtr_miss = np.sum((ml_ecc_gmasi_flat[:,0] == 0) & (ml_ecc_gmasi_flat[:,1] != 0))
-    # ml_ecc_wtr_cnt = ml_ecc_wtr_hit + ml_ecc_wtr_miss
-    # hit_miss_df.loc[date_time,'ML-ECC-wter-hit']  = round((ml_ecc_wtr_hit/ml_ecc_wtr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-ECC-wter-miss']  = round((ml_ecc_wtr_miss/ml_ecc_wtr_cnt)*100,2) 
-
-    # ml_ecc_snfr_hit = np.sum((ml_ecc_gmasi_flat[:,0] == 1) & (ml_ecc_gmasi_flat[:,1] == 1))
-    # ml_ecc_snfr_miss = np.sum((ml_ecc_gmasi_flat[:,0] == 1) & (ml_ecc_gmasi_flat[:,1] != 1))
-    # ml_ecc_snfr_cnt = ml_ecc_snfr_hit + ml_ecc_snfr_miss
-    # hit_miss_df.loc[date_time,'ML-ECC-snflnd-hit']  = round((ml_ecc_snfr_hit/ml_ecc_snfr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-ECC-snflnd-miss']  = round((ml_ecc_snfr_miss/ml_ecc_snfr_cnt)*100,2) 
-
-    # ml_ecc_snc_hit = np.sum((ml_ecc_gmasi_flat[:,0] == 2) & (ml_ecc_gmasi_flat[:,1] == 2))
-    # ml_ecc_snc_miss = np.sum((ml_ecc_gmasi_flat[:,0] == 2) & (ml_ecc_gmasi_flat[:,1] != 2))
-    # ml_ecc_snc_cnt = ml_ecc_snc_hit + ml_ecc_snc_miss
-    # hit_miss_df.loc[date_time,'ML-ECC-snclnd-hit']  = round((ml_ecc_snc_hit/ml_ecc_snc_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-ECC-snclnd-miss']  = round((ml_ecc_snc_miss/ml_ecc_snc_cnt)*100,2) 
-
-    # ml_ecc_ice_hit = np.sum((ml_ecc_gmasi_flat[:,0] == 3) & (ml_ecc_gmasi_flat[:,1] == 3))
-    # ml_ecc_ice_miss = np.sum((ml_ecc_gmasi_flat[:,0] == 3) & (ml_ecc_gmasi_flat[:,1] != 3))
-    # ml_ecc_ice_cnt = ml_ecc_ice_hit + ml_ecc_ice_miss
-    # hit_miss_df.loc[date_time,'ML-ECC-ice-hit']  = round((ml_ecc_ice_hit/ml_ecc_ice_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'ML-ECC-ice-miss']  = round((ml_ecc_ice_miss/ml_ecc_ice_cnt)*100,2) 
-
-    #------------------------------------------------------
-
-    # e_wtr_hit = np.sum((e_gmasi_flat[:,0] == 0) & (e_gmasi_flat[:,1] == 0))
-    # e_wtr_miss = np.sum((e_gmasi_flat[:,0] == 0) & (e_gmasi_flat[:,1] != 0))
-    # e_wtr_cnt = e_wtr_hit + e_wtr_miss
-    # hit_miss_df.loc[date_time,'E-wter-hit']  = round((e_wtr_hit/e_wtr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'E-wter-miss']  = round((e_wtr_miss/e_wtr_cnt)*100,2) 
-
-    # e_snfr_hit = np.sum((e_gmasi_flat[:,0] == 1) & (e_gmasi_flat[:,1] == 1))
-    # e_snfr_miss = np.sum((e_gmasi_flat[:,0] == 1) & (e_gmasi_flat[:,1] != 1))
-    # e_snfr_cnt = e_snfr_hit + e_snfr_miss
-    # hit_miss_df.loc[date_time,'E-snflnd-hit']  = round((e_snfr_hit/e_snfr_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'E-snflnd-miss']  = round((e_snfr_miss/e_snfr_cnt)*100,2) 
-
-    # e_snc_hit = np.sum((e_gmasi_flat[:,0] == 2) & (e_gmasi_flat[:,1] == 2))
-    # e_snc_miss = np.sum((e_gmasi_flat[:,0] == 2) & (e_gmasi_flat[:,1] != 2))
-    # e_snc_cnt = e_snc_hit + e_snc_miss
-    # hit_miss_df.loc[date_time,'E-snclnd-hit']  = round((e_snc_hit/e_snc_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'E-snclnd-miss']  = round((e_snc_miss/e_snc_cnt)*100,2) 
-
-    # e_ice_hit = np.sum((e_gmasi_flat[:,0] == 3) & (e_gmasi_flat[:,1] == 3))
-    # e_ice_miss = np.sum((e_gmasi_flat[:,0] == 3) & (e_gmasi_flat[:,1] != 3))
-    # e_ice_cnt = e_ice_hit + e_ice_miss
-    # hit_miss_df.loc[date_time,'E-ice-hit']  = round((e_ice_hit/e_ice_cnt)*100,2) 
-    # hit_miss_df.loc[date_time,'E-ice-miss']  = round((e_ice_miss/e_ice_cnt)*100,2) 
+    df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, climatology_estimated_arr, date_time, 'CLIM')   
 
     #------------------------------------------------------
 
@@ -1438,6 +1300,17 @@ for l in sorted(all_autosnow_files[:100]):
     
     gmasi_glb_bskt.append(gmasi_dat_array) 
     gc.collect()
+    #------------------------------------------------------
+    # get regional 60 degree lat N data
+    ml_e_arr_60_nh = ml_e_estimated_arr[0:nh_row60[0],:].astype(np.int16)
+
+    ml_ec_arr_60_nh = ml_ec_estimated_arr[0:nh_row60[0],:].astype(np.int16)
+
+    ml_ecc_arr_60_nh = ml_ecc_estimated_arr[0:nh_row60[0],:].astype(np.int16)
+
+    clim_arr_60_nh = climatology_estimated_arr[0:nh_row60[0],:].astype(np.int16)
+
+    gmasi_arr_60_nh = gmasi_dat_array[0:nh_row60[0],:].astype(np.int16)
     #------------------------------------------------------
 
     # segregate the data into different lists according NH, SH and seasons
@@ -1479,11 +1352,7 @@ for l in sorted(all_autosnow_files[:100]):
 #------------------------------------------------------
     # do the extent comparison at the seasonal level
     # NH
-    # rf_nh_gdf = get_gdf(rf_atsnw_arr_nh,rfmp_read_nme,'_nh')
-    # rfclim_nh_gdf = get_gdf(climrf_atsnw_arr_nh,climrfmp_read_nme,'_nh')
-    # tempclim_nh_gdf = get_gdf(temp_climrf_atsnw_arr_nh,temp_climrfmp_read_nme,'_nh')
-    # orig_nh_gdf = get_gdf(orig_atsnw_arr_nh,l,'_nh')
-    # cor_rfclim_nh_gdf = get_gdf(cor_climrf_atsnw_arr_nh,corrected_climrfmp_read_nme,'_nh')
+    
     ml_e_cnt_nh = count_class_pixels(ml_e_arr_nh)
     ml_ec_cnt_nh = count_class_pixels(ml_ec_arr_nh)
     ml_ecc_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
@@ -1495,40 +1364,11 @@ for l in sorted(all_autosnow_files[:100]):
     populate_df_count(nh_px_cnt, ml_ec_cnt_nh, date_time, 'ML-EC')
     populate_df_count(nh_px_cnt, ml_ecc_cnt_nh, date_time, 'ML-ECC')
     populate_df_count(nh_px_cnt, climatology_cnt_nh, date_time, 'CLIM')
-    populate_df_count(nh_px_cnt, gmasi_cnt_nh, date_time, 'GMASI')
-
-    # nh_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_cnt_nh[0]
-    # nh_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_cnt_nh[1]
-    # nh_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_cnt_nh[2]
-    # nh_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_cnt_nh[3]
-
-    # nh_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_cnt_nh[0]
-    # nh_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_cnt_nh[1]
-    # nh_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_cnt_nh[2]
-    # nh_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_cnt_nh[3]
-
-    # nh_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_cnt_nh[0]
-    # nh_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_cnt_nh[1]
-    # nh_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_cnt_nh[2]
-    # nh_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_cnt_nh[3]
-
-    # nh_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_cnt_nh[0]
-    # nh_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_cnt_nh[1]
-    # nh_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_cnt_nh[2]
-    # nh_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_cnt_nh[3]
-
-    # nh_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_cnt_nh[0]
-    # nh_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_cnt_nh[1]
-    # nh_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_cnt_nh[2]
-    # nh_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_cnt_nh[3]   
+    populate_df_count(nh_px_cnt, gmasi_cnt_nh, date_time, 'GMASI')      
 
     #---------------------------------------------------
     # SH
-    # rf_sh_gdf = get_gdf(rf_atsnw_arr_sh,rfmp_read_nme,'_sh')
-    # rfclim_sh_gdf = get_gdf(climrf_atsnw_arr_sh,climrfmp_read_nme,'_sh')
-    # tempclim_sh_gdf = get_gdf(temp_climrf_atsnw_arr_sh,temp_climrfmp_read_nme,'_sh')
-    # orig_sh_gdf = get_gdf(orig_atsnw_arr_sh,l,'_sh')
-    # cor_rfclim_sh_gdf = get_gdf(cor_climrf_atsnw_arr_sh,corrected_climrfmp_read_nme,'_sh')
+    
 
     ml_e_cnt_sh = count_class_pixels(ml_e_arr_sh)
     ml_ec_cnt_sh = count_class_pixels(ml_ec_arr_sh)
@@ -1540,32 +1380,7 @@ for l in sorted(all_autosnow_files[:100]):
     populate_df_count(sh_px_cnt, ml_ec_cnt_sh, date_time, 'ML-EC')
     populate_df_count(sh_px_cnt, ml_ecc_cnt_sh, date_time, 'ML-ECC')
     populate_df_count(sh_px_cnt, climatology_cnt_sh, date_time, 'CLIM')
-    populate_df_count(sh_px_cnt, gmasi_cnt_sh, date_time, 'GMASI')
-
-    # sh_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_cnt_sh[0]
-    # sh_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_cnt_sh[1]
-    # sh_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_cnt_sh[2]
-    # sh_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_cnt_sh[3]
-
-    # sh_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_cnt_sh[0]
-    # sh_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_cnt_sh[1]
-    # sh_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_cnt_sh[2]
-    # sh_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_cnt_sh[3]
-
-    # sh_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_cnt_sh[0]
-    # sh_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_cnt_sh[1]
-    # sh_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_cnt_sh[2]
-    # sh_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_cnt_sh[3]
-
-    # sh_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_cnt_sh[0]
-    # sh_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_cnt_sh[1]
-    # sh_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_cnt_sh[2]
-    # sh_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_cnt_sh[3]
-
-    # sh_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_cnt_sh[0]
-    # sh_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_cnt_sh[1]
-    # sh_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_cnt_sh[2]
-    # sh_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_cnt_sh[3]    
+    populate_df_count(sh_px_cnt, gmasi_cnt_sh, date_time, 'GMASI')       
     #----------------------------------------------------
 
     # append based on season and hemisphere
@@ -1587,32 +1402,7 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(nh_winter_px_cnt, ml_ec_winter_cnt_nh, date_time, 'ML-EC')
         populate_df_count(nh_winter_px_cnt, ml_ecc_winter_cnt_nh, date_time, 'ML-ECC')
         populate_df_count(nh_winter_px_cnt, climatology_winter_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_winter_px_cnt, gmasi_winter_cnt_nh, date_time, 'GMASI') 
-
-        # nh_winter_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_winter_cnt_nh[0]
-        # nh_winter_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_winter_cnt_nh[1]
-        # nh_winter_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_winter_cnt_nh[2]
-        # nh_winter_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_winter_cnt_nh[3]
-
-        # nh_winter_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_winter_cnt_nh[0]
-        # nh_winter_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_winter_cnt_nh[1]
-        # nh_winter_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_winter_cnt_nh[2]
-        # nh_winter_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_winter_cnt_nh[3]
-
-        # nh_winter_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_winter_cnt_nh[0]
-        # nh_winter_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_winter_cnt_nh[1]
-        # nh_winter_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_winter_cnt_nh[2]
-        # nh_winter_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_winter_cnt_nh[3]
-
-        # nh_winter_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_winter_cnt_nh[0]
-        # nh_winter_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_winter_cnt_nh[1]
-        # nh_winter_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_winter_cnt_nh[2]
-        # nh_winter_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_winter_cnt_nh[3]
-
-        # nh_winter_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_winter_cnt_nh[0]
-        # nh_winter_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_winter_cnt_nh[1]
-        # nh_winter_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_winter_cnt_nh[2]
-        # nh_winter_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_winter_cnt_nh[3]      
+        populate_df_count(nh_winter_px_cnt, gmasi_winter_cnt_nh, date_time, 'GMASI')              
 
         #----------------------------------------------------
 
@@ -1633,32 +1423,7 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(nh_spring_px_cnt, ml_ec_spring_cnt_nh, date_time, 'ML-EC')
         populate_df_count(nh_spring_px_cnt, ml_ecc_spring_cnt_nh, date_time, 'ML-ECC')
         populate_df_count(nh_spring_px_cnt, climatology_spring_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_spring_px_cnt, gmasi_spring_cnt_nh, date_time, 'GMASI')                  
-
-        # nh_spring_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_spring_cnt_nh[0]
-        # nh_spring_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_spring_cnt_nh[1]
-        # nh_spring_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_spring_cnt_nh[2]
-        # nh_spring_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_spring_cnt_nh[3]
-
-        # nh_spring_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_spring_cnt_nh[0]
-        # nh_spring_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_spring_cnt_nh[1]
-        # nh_spring_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_spring_cnt_nh[2]
-        # nh_spring_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_spring_cnt_nh[3]
-
-        # nh_spring_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_spring_cnt_nh[0]
-        # nh_spring_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_spring_cnt_nh[1]
-        # nh_spring_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_spring_cnt_nh[2]
-        # nh_spring_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_spring_cnt_nh[3]
-
-        # nh_spring_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_spring_cnt_nh[0]
-        # nh_spring_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_spring_cnt_nh[1]
-        # nh_spring_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_spring_cnt_nh[2]
-        # nh_spring_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_spring_cnt_nh[3]
-        
-        # nh_spring_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_spring_cnt_nh[0]
-        # nh_spring_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_spring_cnt_nh[1]
-        # nh_spring_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_spring_cnt_nh[2]
-        # nh_spring_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_spring_cnt_nh[3]      
+        populate_df_count(nh_spring_px_cnt, gmasi_spring_cnt_nh, date_time, 'GMASI')                      
 
         #----------------------------------------------------
 
@@ -1679,32 +1444,7 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(nh_summer_px_cnt, ml_ec_summer_cnt_nh, date_time, 'ML-EC')
         populate_df_count(nh_summer_px_cnt, ml_ecc_summer_cnt_nh, date_time, 'ML-ECC')
         populate_df_count(nh_summer_px_cnt, climatology_summer_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_summer_px_cnt, gmasi_summer_cnt_nh, date_time, 'GMASI')        
-
-        # nh_summer_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_summer_cnt_nh[0]
-        # nh_summer_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_summer_cnt_nh[1]
-        # nh_summer_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_summer_cnt_nh[2]
-        # nh_summer_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_summer_cnt_nh[3]
-
-        # nh_summer_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_summer_cnt_nh[0]
-        # nh_summer_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_summer_cnt_nh[1]
-        # nh_summer_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_summer_cnt_nh[2]
-        # nh_summer_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_summer_cnt_nh[3]
-
-        # nh_summer_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_summer_cnt_nh[0]
-        # nh_summer_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_summer_cnt_nh[1]
-        # nh_summer_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_summer_cnt_nh[2]
-        # nh_summer_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_summer_cnt_nh[3]
-
-        # nh_summer_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_summer_cnt_nh[0]
-        # nh_summer_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_summer_cnt_nh[1]
-        # nh_summer_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_summer_cnt_nh[2]
-        # nh_summer_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_summer_cnt_nh[3]
-
-        # nh_summer_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_summer_cnt_nh[0]
-        # nh_summer_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_summer_cnt_nh[1]
-        # nh_summer_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_summer_cnt_nh[2]
-        # nh_summer_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_summer_cnt_nh[3]       
+        populate_df_count(nh_summer_px_cnt, gmasi_summer_cnt_nh, date_time, 'GMASI')              
 
         #----------------------------------------------------
 
@@ -1725,32 +1465,7 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(nh_autumn_px_cnt, ml_ec_autumn_cnt_nh, date_time, 'ML-EC')
         populate_df_count(nh_autumn_px_cnt, ml_ecc_autumn_cnt_nh, date_time, 'ML-ECC')
         populate_df_count(nh_autumn_px_cnt, climatology_autumn_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_autumn_px_cnt, gmasi_autumn_cnt_nh, date_time, 'GMASI')
-        
-        # nh_autumn_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_autumn_cnt_nh[0]
-        # nh_autumn_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_autumn_cnt_nh[1]
-        # nh_autumn_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_autumn_cnt_nh[2]
-        # nh_autumn_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_autumn_cnt_nh[3]
-
-        # nh_autumn_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_autumn_cnt_nh[0]
-        # nh_autumn_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_autumn_cnt_nh[1]
-        # nh_autumn_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_autumn_cnt_nh[2]
-        # nh_autumn_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_autumn_cnt_nh[3]
-
-        # nh_autumn_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_autumn_cnt_nh[0]
-        # nh_autumn_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_autumn_cnt_nh[1]
-        # nh_autumn_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_autumn_cnt_nh[2]
-        # nh_autumn_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_autumn_cnt_nh[3]
-
-        # nh_autumn_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_autumn_cnt_nh[0]
-        # nh_autumn_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_autumn_cnt_nh[1]
-        # nh_autumn_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_autumn_cnt_nh[2]
-        # nh_autumn_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_autumn_cnt_nh[3]
-
-        # nh_autumn_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_autumn_cnt_nh[0]
-        # nh_autumn_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_autumn_cnt_nh[1]
-        # nh_autumn_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_autumn_cnt_nh[2]
-        # nh_autumn_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_autumn_cnt_nh[3]      
+        populate_df_count(nh_autumn_px_cnt, gmasi_autumn_cnt_nh, date_time, 'GMASI')   
 
         #----------------------------------------------------
 
@@ -1772,32 +1487,7 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(sh_winter_px_cnt, ml_ec_winter_cnt_sh, date_time, 'ML-EC')
         populate_df_count(sh_winter_px_cnt, ml_ecc_winter_cnt_sh, date_time, 'ML-ECC')
         populate_df_count(sh_winter_px_cnt, climatology_winter_cnt_sh, date_time, 'CLIM')
-        populate_df_count(sh_winter_px_cnt, gmasi_winter_cnt_sh, date_time, 'GMASI')      
-
-        # sh_winter_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_winter_cnt_sh[0]
-        # sh_winter_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_winter_cnt_sh[1]
-        # sh_winter_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_winter_cnt_sh[2]
-        # sh_winter_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_winter_cnt_sh[3]
-
-        # sh_winter_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_winter_cnt_sh[0]
-        # sh_winter_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_winter_cnt_sh[1]
-        # sh_winter_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_winter_cnt_sh[2]
-        # sh_winter_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_winter_cnt_sh[3]
-
-        # sh_winter_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_winter_cnt_sh[0]
-        # sh_winter_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_winter_cnt_sh[1]
-        # sh_winter_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_winter_cnt_sh[2]
-        # sh_winter_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_winter_cnt_sh[3]
-
-        # sh_winter_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_winter_cnt_sh[0]
-        # sh_winter_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_winter_cnt_sh[1]
-        # sh_winter_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_winter_cnt_sh[2]
-        # sh_winter_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_winter_cnt_sh[3]
-
-        # sh_winter_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_winter_cnt_sh[0]
-        # sh_winter_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_winter_cnt_sh[1]
-        # sh_winter_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_winter_cnt_sh[2]
-        # sh_winter_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_winter_cnt_sh[3]     
+        populate_df_count(sh_winter_px_cnt, gmasi_winter_cnt_sh, date_time, 'GMASI')        
 
         #----------------------------------------------------
 
@@ -1820,31 +1510,6 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(sh_spring_px_cnt, climatology_spring_cnt_sh, date_time, 'CLIM')
         populate_df_count(sh_spring_px_cnt, gmasi_spring_cnt_sh, date_time, 'GMASI') 
 
-        # sh_spring_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_spring_cnt_sh[0]
-        # sh_spring_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_spring_cnt_sh[1]
-        # sh_spring_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_spring_cnt_sh[2]
-        # sh_spring_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_spring_cnt_sh[3]
-
-        # sh_spring_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_spring_cnt_sh[0]
-        # sh_spring_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_spring_cnt_sh[1]
-        # sh_spring_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_spring_cnt_sh[2]
-        # sh_spring_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_spring_cnt_sh[3]
-
-        # sh_spring_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_spring_cnt_sh[0]
-        # sh_spring_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_spring_cnt_sh[1]
-        # sh_spring_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_spring_cnt_sh[2]
-        # sh_spring_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_spring_cnt_sh[3]
-
-        # sh_spring_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_spring_cnt_sh[0]
-        # sh_spring_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_spring_cnt_sh[1]
-        # sh_spring_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_spring_cnt_sh[2]
-        # sh_spring_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_spring_cnt_sh[3]
-
-        # sh_spring_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_spring_cnt_sh[0]
-        # sh_spring_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_spring_cnt_sh[1]
-        # sh_spring_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_spring_cnt_sh[2]
-        # sh_spring_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_spring_cnt_sh[3]
-
         #----------------------------------------------------
 
     elif season_sh is 'Summer':
@@ -1864,32 +1529,7 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(sh_summer_px_cnt, ml_ec_summer_cnt_sh, date_time, 'ML-EC')
         populate_df_count(sh_summer_px_cnt, ml_ecc_summer_cnt_sh, date_time, 'ML-ECC')
         populate_df_count(sh_summer_px_cnt, climatology_summer_cnt_sh, date_time, 'CLIM')
-        populate_df_count(sh_summer_px_cnt, gmasi_summer_cnt_sh, date_time, 'GMASI')
-
-        # sh_summer_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_summer_cnt_sh[0]
-        # sh_summer_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_summer_cnt_sh[1]
-        # sh_summer_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_summer_cnt_sh[2]
-        # sh_summer_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_summer_cnt_sh[3]
-
-        # sh_summer_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_summer_cnt_sh[0]
-        # sh_summer_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_summer_cnt_sh[1]
-        # sh_summer_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_summer_cnt_sh[2]
-        # sh_summer_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_summer_cnt_sh[3]
-
-        # sh_summer_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_summer_cnt_sh[0]
-        # sh_summer_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_summer_cnt_sh[1]
-        # sh_summer_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_summer_cnt_sh[2]
-        # sh_summer_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_summer_cnt_sh[3]
-
-        # sh_summer_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_summer_cnt_sh[0]
-        # sh_summer_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_summer_cnt_sh[1]
-        # sh_summer_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_summer_cnt_sh[2]
-        # sh_summer_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_summer_cnt_sh[3]
-
-        # sh_summer_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_summer_cnt_sh[0]
-        # sh_summer_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_summer_cnt_sh[1]
-        # sh_summer_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_summer_cnt_sh[2]
-        # sh_summer_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_summer_cnt_sh[3]       
+        populate_df_count(sh_summer_px_cnt, gmasi_summer_cnt_sh, date_time, 'GMASI')     
 
         #----------------------------------------------------
     elif season_sh is 'Autumn':
@@ -1910,31 +1550,7 @@ for l in sorted(all_autosnow_files[:100]):
         populate_df_count(sh_autumn_px_cnt, ml_ecc_autumn_cnt_sh, date_time, 'ML-ECC')
         populate_df_count(sh_autumn_px_cnt, climatology_autumn_cnt_sh, date_time, 'CLIM')
         populate_df_count(sh_autumn_px_cnt, gmasi_autumn_cnt_sh, date_time, 'GMASI')
-
-        # sh_autumn_px_cnt.loc[date_time,'ml_e_wtr_px_cnt'] = ml_e_autumn_cnt_sh[0]
-        # sh_autumn_px_cnt.loc[date_time,'ml_e_snfr_px_cnt'] = ml_e_autumn_cnt_sh[1]
-        # sh_autumn_px_cnt.loc[date_time,'ml_e_snc_px_cnt'] = ml_e_autumn_cnt_sh[2]
-        # sh_autumn_px_cnt.loc[date_time,'ml_e_ice_px_cnt'] = ml_e_autumn_cnt_sh[3]
-
-        # sh_autumn_px_cnt.loc[date_time,'ml_ec_wtr_px_cnt'] = ml_ec_autumn_cnt_sh[0]
-        # sh_autumn_px_cnt.loc[date_time,'ml_ec_snfr_px_cnt'] = ml_ec_autumn_cnt_sh[1]
-        # sh_autumn_px_cnt.loc[date_time,'ml_ec_snc_px_cnt'] = ml_ec_autumn_cnt_sh[2]
-        # sh_autumn_px_cnt.loc[date_time,'ml_ec_ice_px_cnt'] = ml_ec_autumn_cnt_sh[3]
-
-        # sh_autumn_px_cnt.loc[date_time,'climatology_wtr_px_cnt'] = climatology_autumn_cnt_sh[0]
-        # sh_autumn_px_cnt.loc[date_time,'climatology_snfr_px_cnt'] = climatology_autumn_cnt_sh[1]
-        # sh_autumn_px_cnt.loc[date_time,'climatology_snc_px_cnt'] = climatology_autumn_cnt_sh[2]
-        # sh_autumn_px_cnt.loc[date_time,'climatology_ice_px_cnt'] = climatology_autumn_cnt_sh[3]
-
-        # sh_autumn_px_cnt.loc[date_time,'gmasi_wtr_px_cnt'] = gmasi_autumn_cnt_sh[0]
-        # sh_autumn_px_cnt.loc[date_time,'gmasi_snfr_px_cnt'] = gmasi_autumn_cnt_sh[1]
-        # sh_autumn_px_cnt.loc[date_time,'gmasi_snc_px_cnt'] = gmasi_autumn_cnt_sh[2]
-        # sh_autumn_px_cnt.loc[date_time,'gmasi_ice_px_cnt'] = gmasi_autumn_cnt_sh[3]  
-
-        # sh_autumn_px_cnt.loc[date_time,'ml_ecc_wtr_px_cnt'] = ml_ecc_autumn_cnt_sh[0]
-        # sh_autumn_px_cnt.loc[date_time,'ml_ecc_snfr_px_cnt'] = ml_ecc_autumn_cnt_sh[1]
-        # sh_autumn_px_cnt.loc[date_time,'ml_ecc_snc_px_cnt'] = ml_ecc_autumn_cnt_sh[2]
-        # sh_autumn_px_cnt.loc[date_time,'ml_ecc_ice_px_cnt'] = ml_ecc_autumn_cnt_sh[3]        
+       
     #------------------------------------------------------
     
     # compare the extent (km^2) per autosnow class estimated by the model and original
@@ -1954,16 +1570,12 @@ for l in sorted(all_autosnow_files[:100]):
     
     calcualte_total_area(area_extent, gmasi_dat_array, path_to_put_intermediate_files, 
                          yr_DOY, date_time, 'GMASI', integer_list, meta_crs, meta_trns)
-
-    # ml_e_vec_flnme = os.path.join(path_to_put_intermediate_files,os.path.basename(ml_e_read_nme).replace('.tif','.shp'))
-    # ml_e_arr = ml_e_estimated_arr.astype(np.int16).copy()    
-    # ml_e_gdf = array_to_vector(ml_e_arr, ml_e_vec_flnme, integer_list, 
-    #                                     meta_crs.to_string(),meta_trns,)  
     
-    # area_extent.loc[date_time,'ml_e_wtr_total_area'] = get_total_area(ml_e_gdf,0)
-    # area_extent.loc[date_time,'ml_e_snfr_total_area'] = get_total_area(ml_e_gdf,1)
-    # area_extent.loc[date_time,'ml_e_snc_total_area'] = get_total_area(ml_e_gdf,2)
-    # area_extent.loc[date_time,'ml_e_ice_total_area'] = get_total_area(ml_e_gdf,3)
+    #------------------------------------------------------
+    # calculate area for regional analysis 60N
+    calcualte_total_area(area_ext_reg_60n,ml_e_arr_60_nh, path_to_put_intermediate_files,
+                         yr_DOY, date_time, 'ML-E', integer_list, meta_crs, meta_trns)
+    #------------------------------------------------------
 
     ml_e_cnt = count_class_pixels(ml_e_estimated_arr.astype(np.int16)) 
     ml_ec_cnt = count_class_pixels(ml_ec_estimated_arr.astype(np.int16)) 
@@ -1976,111 +1588,6 @@ for l in sorted(all_autosnow_files[:100]):
     populate_df_count(px_cnt, ml_ecc_cnt, date_time, 'ML-ECC')
     populate_df_count(px_cnt, clim_cnt, date_time, 'CLIM')
     populate_df_count(px_cnt, gmasi_cnt, date_time, 'GMASI')          
-    
-    # px_cnt.loc[date_time, 'ml_e_wtr_px_cnt'] = ml_e_cnt[0]
-    # px_cnt.loc[date_time, 'ml_e_snfr_px_cnt'] = ml_e_cnt[1]
-    # px_cnt.loc[date_time, 'ml_e_snc_px_cnt'] = ml_e_cnt[2]
-    # px_cnt.loc[date_time, 'ml_e_ice_px_cnt'] = ml_e_cnt[3]
-
-    #------------------------------------------------------
-    
-    # RF ERA5 + clim autosnow based estimates
-    # ml_ec_vec_flnme = os.path.join(path_to_put_intermediate_files,os.path.basename(ml_ec_read_nme).replace('.tif','.shp'))
-    # ml_ec_arr = ml_ec_estimated_arr.astype(np.int16).copy()    
-    # ml_ec_gdf = array_to_vector(ml_ec_arr, ml_ec_vec_flnme, integer_list, 
-    #                                     meta_crs.to_string(),meta_trns,) 
-
-    # ml_ec_cnt = count_class_pixels(ml_ec_arr.astype(np.int16)) 
-    
-    # area_extent.loc[date_time,'ml_ec_wtr_total_area'] = get_total_area(ml_ec_gdf,0)
-    # area_extent.loc[date_time,'ml_ec_snfr_total_area'] = get_total_area(ml_ec_gdf,1)
-    # area_extent.loc[date_time,'ml_ec_snc_total_area'] = get_total_area(ml_ec_gdf,2)
-    # area_extent.loc[date_time,'ml_ec_ice_total_area'] = get_total_area(ml_ec_gdf,3)
-    
-    # px_cnt.loc[date_time, 'ml_ec_wtr_px_cnt'] = ml_ec_cnt[0]
-    # px_cnt.loc[date_time, 'ml_ec_snfr_px_cnt'] = ml_ec_cnt[1]
-    # px_cnt.loc[date_time, 'ml_ec_snc_px_cnt'] = ml_ec_cnt[2]
-    # px_cnt.loc[date_time, 'ml_ec_ice_px_cnt'] = ml_ec_cnt[3]
-    #------------------------------------------------------
-
-    # original autosnow based estimates
-    # gmasi_vec_flnme = os.path.join(path_to_put_intermediate_files,os.path.basename(file_path).replace('.tif','.shp'))
-    # gmasi_array = gmasi_dat_array.astype(np.int16).copy()    
-    # gmasi_gdf = array_to_vector(gmasi_array, gmasi_vec_flnme, integer_list, 
-    #                                     meta_crs.to_string(),meta_trns,) 
-    
-    # gmasi_cnt_sh = count_class_pixels(gmasi_array.astype(np.int16))
-    
-    # area_extent.loc[date_time,'gmasi_wtr_total_area'] = get_total_area(gmasi_gdf,0)
-    # area_extent.loc[date_time,'gmasi_snfr_total_area'] = get_total_area(gmasi_gdf,1)
-    # area_extent.loc[date_time,'gmasi_snc_total_area'] = get_total_area(gmasi_gdf,2)
-    # area_extent.loc[date_time,'gmasi_ice_total_area'] = get_total_area(gmasi_gdf,3)
-    
-    # px_cnt.loc[date_time, 'gmasi_wtr_px_cnt'] = gmasi_cnt_sh[0]
-    # px_cnt.loc[date_time, 'gmasi_snfr_px_cnt'] = gmasi_cnt_sh[1]
-    # px_cnt.loc[date_time, 'gmasi_snc_px_cnt'] = gmasi_cnt_sh[2]
-    # px_cnt.loc[date_time, 'gmasi_ice_px_cnt'] = gmasi_cnt_sh[3]  
-
-    #------------------------------------------------------
-    
-    # corrected RF ERA5 + clim autosnow based estimates
-    # ml_ecc_vec_flnme = os.path.join(path_to_put_intermediate_files,os.path.basename(ml_ecc_read_nme).replace('.tif','.shp'))
-    # ml_ecc_arr = ml_ecc_estimated_arr.astype(np.int16).copy()    
-    # ml_ecc_gdf = array_to_vector(ml_ecc_arr, ml_ecc_vec_flnme,
-    #                                         integer_list, meta_crs.to_string(),meta_trns,)  
-    
-    # ml_ecc_cnt = count_class_pixels(ml_ecc_arr.astype(np.int16))
-    
-    # area_extent.loc[date_time,'ml_ecc_wtr_total_area'] = get_total_area(ml_ecc_gdf,0)
-    # area_extent.loc[date_time,'ml_ecc_snfr_total_area'] = get_total_area(ml_ecc_gdf,1)
-    # area_extent.loc[date_time,'ml_ecc_snc_total_area'] = get_total_area(ml_ecc_gdf,2)
-    # area_extent.loc[date_time,'ml_ecc_ice_total_area'] = get_total_area(ml_ecc_gdf,3)
-    
-    # px_cnt.loc[date_time, 'ml_ecc_wtr_px_cnt'] = ml_ecc_cnt[0]
-    # px_cnt.loc[date_time, 'ml_ecc_snfr_px_cnt'] = ml_ecc_cnt[1]
-    # px_cnt.loc[date_time, 'ml_ecc_snc_px_cnt'] = ml_ecc_cnt[2]
-    # px_cnt.loc[date_time, 'ml_ecc_ice_px_cnt'] = ml_ecc_cnt[3]
-
-    #------------------------------------------------------
-    
-    # temp clim autosnow based estimates
-    # climatology_vec_flnme = os.path.join(path_to_put_intermediate_files,
-    #                                         os.path.basename(climatology_read_nme).replace('.tif','.shp'))
-    # climatology_arr = climatology_estimated_arr.astype(np.int16).copy()    
-    # climatology_gdf = array_to_vector(climatology_estimated_arr, climatology_vec_flnme, integer_list, 
-    #                                             meta_crs.to_string(),meta_trns,)  
-
-    # climatology_cnt_sh = count_class_pixels(climatology_arr.astype(np.int16))
-    
-    # area_extent.loc[date_time,'climatology_wtr_total_area'] = get_total_area(climatology_gdf,0)
-    # area_extent.loc[date_time,'climatology_snfr_total_area'] = get_total_area(climatology_gdf,1)
-    # area_extent.loc[date_time,'climatology_snc_total_area'] = get_total_area(climatology_gdf,2)
-    # area_extent.loc[date_time,'climatology_ice_total_area'] = get_total_area(climatology_gdf,3)
-    
-    # px_cnt.loc[date_time, 'climatology_wtr_px_cnt'] = climatology_cnt_sh[0]
-    # px_cnt.loc[date_time, 'climatology_snfr_px_cnt'] = climatology_cnt_sh[1]
-    # px_cnt.loc[date_time, 'climatology_snc_px_cnt'] = climatology_cnt_sh[2]
-    # px_cnt.loc[date_time, 'climatology_ice_px_cnt'] = climatology_cnt_sh[3]      
-
-    #------------------------------------------------------
-    
-    # e estimates
-    # e_vec_flnme = os.path.join(path_to_put_intermediate_files,
-    #                                      os.path.basename(e_read_nme).replace('.tif','.shp'))
-    # e_arr = e_estimated_arr.astype(np.int16).copy()    
-    # e_gdf = array_to_vector(e_estimated_arr, e_vec_flnme, integer_list, meta_crs.to_string(),meta_trns,)  
-
-    # e_cnt_sh = count_class_pixels(e_arr.astype(np.int16))
-    
-    # area_extent.loc[date_time,'e_wtr_total_area'] = get_total_area(e_gdf,0)
-    # area_extent.loc[date_time,'e_snfr_total_area'] = get_total_area(e_gdf,1)
-    # area_extent.loc[date_time,'e_snc_total_area'] = get_total_area(e_gdf,2)
-    # area_extent.loc[date_time,'e_ice_total_area'] = get_total_area(e_gdf,3)
-    
-    # px_cnt.loc[date_time, 'e_wtr_px_cnt'] = e_cnt_sh[0]
-    # px_cnt.loc[date_time, 'e_snfr_px_cnt'] = e_cnt_sh[1]
-    # px_cnt.loc[date_time, 'e_snc_px_cnt'] = e_cnt_sh[2]
-    # px_cnt.loc[date_time, 'e_ice_px_cnt'] = e_cnt_sh[3]  
 
     # if count % 100 == 0:
     #     print(str(count) + ' at ' + str(date_time_))  
@@ -2100,7 +1607,6 @@ def parallel_process_files_(file_paths):
                 print(f'{file_path} generated an exception: {exc}')
     
     return results
-
 
 def parallel_process_files(file_paths, max_workers=15):
     from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -2171,6 +1677,7 @@ count = 0
 
 hit_miss_df = pd.DataFrame()
 area_extent = pd.DataFrame()
+area_ext_reg_60n = pd.DataFrame()
 px_cnt = pd.DataFrame()
 nh_px_cnt = pd.DataFrame()
 sh_px_cnt = pd.DataFrame()
@@ -2186,7 +1693,7 @@ sh_summer_px_cnt = pd.DataFrame()
 sh_autumn_px_cnt = pd.DataFrame()
 
 print('Main parallel execution has begun')
-files = sorted(all_autosnow_files)[:100]  # List of file paths
+files = sorted(all_autosnow_files)  # List of file paths
 aggregated_results = parallel_process_files_(files)
 print('done!')
 
