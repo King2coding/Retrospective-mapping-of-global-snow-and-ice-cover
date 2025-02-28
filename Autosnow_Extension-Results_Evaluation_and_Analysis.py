@@ -156,6 +156,8 @@ tropical_mask = (lats >= -25) & (lats <= 25) & (lsm == 1)
 2: snow-covered land
 3: ice
 """
+
+
 #%%
 # define fucntions
 def extract_method_surface_type(index):
@@ -1764,6 +1766,12 @@ px_cnt['ml_ecc_gmasi_ice_diff'] = px_cnt['ml_ecc_ice_px_cnt'] - px_cnt['gmasi_ic
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # the differences in area extent (per class) by the different model and GMASI duirng the vaidation period
+
+
+area_extent_computed = get_area_extent_diffs(area_extent)
+
+area_extent_computed_60n = get_area_extent_diffs(area_ext_reg_60n)
+
 area_extent['ml_e_gmasi_wtr_diff'] = ((area_extent['ml_e_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
 
 area_extent['ml_e_gmasi_snfr_diff'] = ((area_extent['ml_e_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
@@ -1931,7 +1939,8 @@ col2resample = ['ml_e_gmasi_wtr_diff', 'ml_e_gmasi_snfr_diff', 'ml_e_gmasi_snc_d
 # 'e_gmasi_wtr_diff', 'e_gmasi_snfr_diff', 'e_gmasi_snc_diff','e_gmasi_ice_diff',
 
 
-filter_items = ['ml_e_gmasi_wtr_diff','ml_ec_gmasi_wtr_diff', 'ml_ecc_gmasi_wtr_diff', 'climatology_gmasi_wtr_diff', 
+filter_items = [clmn for clmn in area_extent.columns if 'diff' in clmn]
+['ml_e_gmasi_wtr_diff','ml_ec_gmasi_wtr_diff', 'ml_ecc_gmasi_wtr_diff', 'climatology_gmasi_wtr_diff', 
                'ml_e_gmasi_snfr_diff','ml_ec_gmasi_snfr_diff','ml_ecc_gmasi_snfr_diff','climatology_gmasi_snfr_diff', 
                'ml_e_gmasi_snc_diff','ml_ec_gmasi_snc_diff','ml_ecc_gmasi_snc_diff','climatology_gmasi_snc_diff', 
                'ml_e_gmasi_ice_diff','ml_ec_gmasi_ice_diff','ml_ecc_gmasi_ice_diff','climatology_gmasi_ice_diff', ]
@@ -1943,12 +1952,29 @@ area_extent_diff_mnth = area_extent[col2resample].resample('M').mean()
 area_extent_diff_yr = area_extent[col2resample].resample('Y').mean()
 
 # calculate the average error per class per year
-area_extent_anom_yearly_avg = area_extent.groupby(area_extent.index.year)[col2resample].mean() # 
-area_extent_anom_yearly_avg = pd.DataFrame(area_extent_anom_yearly_avg.filter(items=filter_items))
-area_extent_anom_yearly_avg = area_extent_anom_yearly_avg.transpose()
-
-svnem_csv = '_'.join(['average_errors_in_land_cover_extent_per_year',cde_run_dte])+ '.csv'
+# area_extent_anom_yearly_avg = area_extent.groupby(area_extent.index.year)[col2resample].mean() # 
+# area_extent_anom_yearly_avg = pd.DataFrame(area_extent_anom_yearly_avg.filter(items=filter_items))
+# area_extent_anom_yearly_avg = area_extent_anom_yearly_avg.transpose()
+# Table 5
+area_extent_anom_yearly_avg = pd.DataFrame(area_extent[filter_items].mean(),columns=['mean'])
+svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_period',cde_run_dte])+ '.csv'
 area_extent_anom_yearly_avg.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
+svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_season',cde_run_dte])+ '.csv'
+area_extent['month'] = area_extent.index.month
+area_extent['season'] = area_extent['month'].apply(get_season)
+area_extent_seasonal_mean = area_extent.groupby('season')[filter_items].mean()
+area_extent_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
+# Table S2
+svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_year_60N',cde_run_dte])+ '.csv'
+area_ext_60n_anom_yearl_avg = pd.DataFrame(area_ext_reg_60n[filter_items].mean(),columns=['mean'])
+
+svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_season_60N',cde_run_dte])+ '.csv'
+area_ext_reg_60n['month'] = area_ext_reg_60n.index.month
+area_ext_reg_60n['season'] = area_ext_reg_60n['month'].apply(get_season)
+area_ext_reg_60n_seasonal_mean = area_ext_reg_60n.groupby('season')[filter_items].mean()
+area_ext_reg_60n_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
 #----------------------------------------------------------------------------------------
 print('make time series plot of area extent - Figure 8')
 
@@ -1975,9 +2001,9 @@ def plot_time_series_4x1(area_extent_df):
     lss = ['-', '-.', ':', '-']
     for i, ax in enumerate(axes):
         var = variables[i]
-        for model, lab, color, lw, ls in zip(['ml_e', 'ml_ec', 'ml_ecc', 'climatology'], 
+        for model, lab, color, lw, ls in zip(['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], 
                                              ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], colors, lws, lss):
-            ax.plot(area_extent_df.index, area_extent_df[f'{model}_gmasi_{var}_diff'], 
+            ax.plot(area_extent_df.index, area_extent_df[f'{model}_{var}_total_area_diff'], 
                     label=lab, color=color, lw=lw, ls=ls)
 
        # Set titles and adjust axes
@@ -2020,9 +2046,15 @@ def plot_time_series_4x1(area_extent_df):
     # Save or display
     # plt.show()
 
-plot_time_series_4x1(area_extent)
+plot_time_series_4x1(area_extent_computed)
 
-svenme = '_'.join(['percentage_bias_in_extent_anomaly',cde_run_dte]) + '.png'
+svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
+plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
+plt.close()
+
+plot_time_series_4x1(area_extent_computed_60n)
+
+svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 

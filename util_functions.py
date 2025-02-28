@@ -27,6 +27,13 @@ from pyproj import CRS
 # floating variables
 cc_epsg = CRS.from_authority(code=4326,auth_name='EPSG')
 
+
+season_months = {
+    'winter': [12, 1, 2],
+    'spring': [3, 4, 5],
+    'summer': [6, 7, 8],
+    'autumn': [9, 10, 11]
+}
 #%%
 # define the functions
 def spatial_resampling(data, shape, resampling_technique):
@@ -55,7 +62,11 @@ def spatial_resampling(data, shape, resampling_technique):
     
     return resampled_data 
 #-----------------------------------------------------------------------------------------
-
+def get_season(month):
+    for season, months in season_months.items():
+        if month in months:
+            return season
+#----------------------------------------------------------------------------------------
 # function for saving files to compressed netcdf files
 def spit_nc_file(data, filename, lon, lat,var_name, summary):
     import datetime
@@ -437,7 +448,21 @@ def read_processed_files(path_to_data, name_parts, ext):
     return np.where(arr > 3,np.nan,arr)
 
 #--------------------------------------------------------------------------------------------------------
+def get_area_extent_diffs(area_df):
+    df_clmns = [clmns for clmns in area_df.columns if not 'GMASI' in clmns] #area_extent.columns
+    for clmn in df_clmns:
+        if 'wtr' in clmn:
+            gmasi_clmn = 'GMASI_wtr_total_area'
+        elif 'snfr' in clmn:
+            gmasi_clmn = 'GMASI_snfr_total_area'
+        elif 'snc' in clmn:
+            gmasi_clmn = 'GMASI_snc_total_area'
+        elif 'ice' in clmn:
+            gmasi_clmn = 'GMASI_ice_total_area'
 
+        area_df[clmn + '_diff'] = ((area_df[clmn] - area_df[gmasi_clmn])/area_df[gmasi_clmn])*100
+    return area_df
+#-----------------------------------------------------------------------------------------
 def get_percent_hitmiss(df, obs, pred, prdt, dt, integer_list):
     # get counts
     input_arr = np.column_stack([obs.flatten(), pred.flatten()])
