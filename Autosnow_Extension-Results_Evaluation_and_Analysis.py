@@ -1623,7 +1623,7 @@ def parallel_process_files_(file_paths):
     
     return results
 
-def parallel_process_files(file_paths, max_workers=15):
+def parallel_process_files(file_paths, max_workers=20):
     from concurrent.futures import ProcessPoolExecutor, as_completed
 
     """
@@ -1712,48 +1712,48 @@ sh_autumn_px_cnt = pd.DataFrame()
 
 print('Main parallel execution has begun')
 files = sorted(all_autosnow_files) # List of file paths
-aggregated_results = parallel_process_files_(files)
+aggregated_results = parallel_process_files(files)
 print('done!')
 
 svnem_csv = '_'.join(['daily_percent_mismatch_analysis',cde_run_dte])+ '.csv'
 hit_miss_df.to_csv(os.path.join(path_to_put_df,svnem_csv))
 #%%
-print('begin evaluation')    
-# the differences in the total pixel count per class classified by the different models and origina (GMASI) data
-px_cnt['ml_e_gmasi_wtr_diff'] = px_cnt['ml_e_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']# ml_e_wtr_px_cnt
+# print('begin evaluation')    
+# # the differences in the total pixel count per class classified by the different models and origina (GMASI) data
+# px_cnt['ml_e_gmasi_wtr_diff'] = px_cnt['ml_e_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']# ml_e_wtr_px_cnt
 
-px_cnt['ml_e_gmasi_snfr_diff'] = px_cnt['ml_e_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
+# px_cnt['ml_e_gmasi_snfr_diff'] = px_cnt['ml_e_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
 
-px_cnt['ml_e_gmasi_snc_diff'] = px_cnt['ml_e_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
+# px_cnt['ml_e_gmasi_snc_diff'] = px_cnt['ml_e_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
 
-px_cnt['ml_e_gmasi_ice_diff'] = px_cnt['ml_e_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
+# px_cnt['ml_e_gmasi_ice_diff'] = px_cnt['ml_e_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
 
-#------------------------------------------------------
-px_cnt['ml_ec_gmasi_wtr_diff'] = px_cnt['ml_ec_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
+# #------------------------------------------------------
+# px_cnt['ml_ec_gmasi_wtr_diff'] = px_cnt['ml_ec_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
 
-px_cnt['ml_ec_gmasi_snfr_diff'] = px_cnt['ml_ec_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
+# px_cnt['ml_ec_gmasi_snfr_diff'] = px_cnt['ml_ec_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
 
-px_cnt['ml_ec_gmasi_snc_diff'] = px_cnt['ml_ec_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
+# px_cnt['ml_ec_gmasi_snc_diff'] = px_cnt['ml_ec_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
 
-px_cnt['ml_ec_gmasi_ice_diff'] = px_cnt['ml_ec_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
+# px_cnt['ml_ec_gmasi_ice_diff'] = px_cnt['ml_ec_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
 
-#------------------------------------------------------
-px_cnt['climatology_gmasi_wtr_diff'] = px_cnt['climatology_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
+# #------------------------------------------------------
+# px_cnt['climatology_gmasi_wtr_diff'] = px_cnt['climatology_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
 
-px_cnt['climatology_gmasi_snfr_diff'] = px_cnt['climatology_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
+# px_cnt['climatology_gmasi_snfr_diff'] = px_cnt['climatology_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
 
-px_cnt['climatology_gmasi_snc_diff'] = px_cnt['climatology_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
+# px_cnt['climatology_gmasi_snc_diff'] = px_cnt['climatology_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
 
-px_cnt['climatology_gmasi_ice_diff'] = px_cnt['climatology_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
+# px_cnt['climatology_gmasi_ice_diff'] = px_cnt['climatology_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
 
-#------------------------------------------------------
-px_cnt['ml_ecc_gmasi_wtr_diff'] = px_cnt['ml_ecc_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
+# #------------------------------------------------------
+# px_cnt['ml_ecc_gmasi_wtr_diff'] = px_cnt['ml_ecc_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
 
-px_cnt['ml_ecc_gmasi_snfr_diff'] = px_cnt['ml_ecc_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
+# px_cnt['ml_ecc_gmasi_snfr_diff'] = px_cnt['ml_ecc_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
 
-px_cnt['ml_ecc_gmasi_snc_diff'] = px_cnt['ml_ecc_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
+# px_cnt['ml_ecc_gmasi_snc_diff'] = px_cnt['ml_ecc_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
 
-px_cnt['ml_ecc_gmasi_ice_diff'] = px_cnt['ml_ecc_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
+# px_cnt['ml_ecc_gmasi_ice_diff'] = px_cnt['ml_ecc_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
 
 #------------------------------------------------------
 # px_cnt['e_gmasi_wtr_diff'] = px_cnt['e_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
