@@ -1940,10 +1940,10 @@ col2resample = ['ml_e_gmasi_wtr_diff', 'ml_e_gmasi_snfr_diff', 'ml_e_gmasi_snc_d
 
 
 filter_items = [clmn for clmn in area_extent.columns if 'diff' in clmn]
-['ml_e_gmasi_wtr_diff','ml_ec_gmasi_wtr_diff', 'ml_ecc_gmasi_wtr_diff', 'climatology_gmasi_wtr_diff', 
-               'ml_e_gmasi_snfr_diff','ml_ec_gmasi_snfr_diff','ml_ecc_gmasi_snfr_diff','climatology_gmasi_snfr_diff', 
-               'ml_e_gmasi_snc_diff','ml_ec_gmasi_snc_diff','ml_ecc_gmasi_snc_diff','climatology_gmasi_snc_diff', 
-               'ml_e_gmasi_ice_diff','ml_ec_gmasi_ice_diff','ml_ecc_gmasi_ice_diff','climatology_gmasi_ice_diff', ]
+# ['ml_e_gmasi_wtr_diff','ml_ec_gmasi_wtr_diff', 'ml_ecc_gmasi_wtr_diff', 'climatology_gmasi_wtr_diff', 
+#                'ml_e_gmasi_snfr_diff','ml_ec_gmasi_snfr_diff','ml_ecc_gmasi_snfr_diff','climatology_gmasi_snfr_diff', 
+#                'ml_e_gmasi_snc_diff','ml_ec_gmasi_snc_diff','ml_ecc_gmasi_snc_diff','climatology_gmasi_snc_diff', 
+#                'ml_e_gmasi_ice_diff','ml_ec_gmasi_ice_diff','ml_ecc_gmasi_ice_diff','climatology_gmasi_ice_diff', ]
 # 'e_gmasi_wtr_diff', 'e_gmasi_snfr_diff', 'e_gmasi_snc_diff', 'e_gmasi_ice_diff'
 #--------------------------------------------------------------------------------------------
 
