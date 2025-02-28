@@ -83,9 +83,9 @@ def plot_time_series_4x1(area_extent_df):
     lss = ['-', '-.', ':', '-']
     for i, ax in enumerate(axes):
         var = variables[i]
-        for model, lab, color, lw, ls in zip(['ml_e', 'ml_ec', 'ml_ecc', 'climatology'], 
+        for model, lab, color, lw, ls in zip(['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], 
                                              ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], colors, lws, lss):
-            ax.plot(area_extent_df.index, area_extent_df[f'{model}_gmasi_{var}_diff'], 
+            ax.plot(area_extent_df.index, area_extent_df[f'{model}_{var}_total_area_diff'], 
                     label=lab, color=color, lw=lw, ls=ls)
 
        # Set titles and adjust axes
@@ -124,3 +124,6 @@ def plot_time_series_4x1(area_extent_df):
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.02), 
                ncol=4, columnspacing=1, frameon=False, fontsize=18)
+
+    # Save or display
+    # plt.show()

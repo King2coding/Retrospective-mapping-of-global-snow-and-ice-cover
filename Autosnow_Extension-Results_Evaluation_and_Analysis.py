@@ -1711,7 +1711,7 @@ sh_summer_px_cnt = pd.DataFrame()
 sh_autumn_px_cnt = pd.DataFrame()
 
 print('Main parallel execution has begun')
-files = sorted(all_autosnow_files)[:100]  # List of file paths
+files = sorted(all_autosnow_files) # List of file paths
 aggregated_results = parallel_process_files_(files)
 print('done!')
 
@@ -1772,40 +1772,40 @@ area_extent_computed = get_area_extent_diffs(area_extent)
 
 area_extent_computed_60n = get_area_extent_diffs(area_ext_reg_60n)
 
-area_extent['ml_e_gmasi_wtr_diff'] = ((area_extent['ml_e_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
+# area_extent['ml_e_gmasi_wtr_diff'] = ((area_extent['ml_e_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
 
-area_extent['ml_e_gmasi_snfr_diff'] = ((area_extent['ml_e_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
+# area_extent['ml_e_gmasi_snfr_diff'] = ((area_extent['ml_e_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
 
-area_extent['ml_e_gmasi_snc_diff'] = ((area_extent['ml_e_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
+# area_extent['ml_e_gmasi_snc_diff'] = ((area_extent['ml_e_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
 
-area_extent['ml_e_gmasi_ice_diff'] = ((area_extent['ml_e_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
+# area_extent['ml_e_gmasi_ice_diff'] = ((area_extent['ml_e_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
 
-#------------------------------------------------------
-area_extent['ml_ec_gmasi_wtr_diff'] = ((area_extent['ml_ec_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
+# #------------------------------------------------------
+# area_extent['ml_ec_gmasi_wtr_diff'] = ((area_extent['ml_ec_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
 
-area_extent['ml_ec_gmasi_snfr_diff'] = ((area_extent['ml_ec_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
+# area_extent['ml_ec_gmasi_snfr_diff'] = ((area_extent['ml_ec_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
 
-area_extent['ml_ec_gmasi_snc_diff'] = ((area_extent['ml_ec_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
+# area_extent['ml_ec_gmasi_snc_diff'] = ((area_extent['ml_ec_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
 
-area_extent['ml_ec_gmasi_ice_diff'] = ((area_extent['ml_ec_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
+# area_extent['ml_ec_gmasi_ice_diff'] = ((area_extent['ml_ec_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
 
-#------------------------------------------------------
-area_extent['climatology_gmasi_wtr_diff'] = ((area_extent['climatology_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
+# #------------------------------------------------------
+# area_extent['climatology_gmasi_wtr_diff'] = ((area_extent['climatology_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
 
-area_extent['climatology_gmasi_snfr_diff'] = ((area_extent['climatology_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
+# area_extent['climatology_gmasi_snfr_diff'] = ((area_extent['climatology_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
 
-area_extent['climatology_gmasi_snc_diff'] = ((area_extent['climatology_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
+# area_extent['climatology_gmasi_snc_diff'] = ((area_extent['climatology_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
 
-area_extent['climatology_gmasi_ice_diff'] = ((area_extent['climatology_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
+# area_extent['climatology_gmasi_ice_diff'] = ((area_extent['climatology_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
 
-#------------------------------------------------------
-area_extent['ml_ecc_gmasi_wtr_diff'] = ((area_extent['ml_ecc_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
+# #------------------------------------------------------
+# area_extent['ml_ecc_gmasi_wtr_diff'] = ((area_extent['ml_ecc_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
 
-area_extent['ml_ecc_gmasi_snfr_diff'] = ((area_extent['ml_ecc_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
+# area_extent['ml_ecc_gmasi_snfr_diff'] = ((area_extent['ml_ecc_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
 
-area_extent['ml_ecc_gmasi_snc_diff'] = ((area_extent['ml_ecc_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
+# area_extent['ml_ecc_gmasi_snc_diff'] = ((area_extent['ml_ecc_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
 
-area_extent['ml_ecc_gmasi_ice_diff'] = ((area_extent['ml_ecc_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
+# area_extent['ml_ecc_gmasi_ice_diff'] = ((area_extent['ml_ecc_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
 
 #------------------------------------------------------
 # area_extent['e_gmasi_wtr_diff'] = ((area_extent['e_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
@@ -1827,11 +1827,11 @@ print('running disk management')
 [os.remove(os.path.join(path_to_estimated_autosnw,x)) for x in os.listdir(path_to_estimated_autosnw) \
                                 if any(x.endswith(rm) for rm in ['cpg','dbf','shp','prj','shx'])]
 
-svnem_csv = '_'.join(['area_extent_analysis',cde_run_dte])+ '.csv'
-area_extent.to_csv(os.path.join(path_to_put_df,svnem_csv))
+# svnem_csv = '_'.join(['area_extent_analysis',cde_run_dte])+ '.csv'
+# area_extent.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
-svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
-px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
+# svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
+# px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
 #%%
 print('*************** begin match/missmatch calculations ***********************')
 
@@ -1866,68 +1866,68 @@ print('*************** begin match/missmatch calculations **********************
 
 #--------------------------------------------------------------------------------------------
 # NH 
-nh_summer_hits_2d_ml_e, nh_summer_miss_2d_ml_e = return_px_based_hit_miss_percent(nh_summer_ml_e, nh_summer_gmasi,)
+# nh_summer_hits_2d_ml_e, nh_summer_miss_2d_ml_e = return_px_based_hit_miss_percent(nh_summer_ml_e, nh_summer_gmasi,)
 
-nh_summer_hits_2d_ml_ec, nh_summer_miss_2d_ml_ec = return_px_based_hit_miss_percent(nh_summer_ml_ec, nh_summer_gmasi)
+# nh_summer_hits_2d_ml_ec, nh_summer_miss_2d_ml_ec = return_px_based_hit_miss_percent(nh_summer_ml_ec, nh_summer_gmasi)
 
-nh_summer_hits_2d_ml_ecc, nh_summer_miss_2d_ml_ecc = return_px_based_hit_miss_percent(nh_summer_ml_ecc, nh_summer_gmasi)
+# nh_summer_hits_2d_ml_ecc, nh_summer_miss_2d_ml_ecc = return_px_based_hit_miss_percent(nh_summer_ml_ecc, nh_summer_gmasi)
 
-nh_summer_hits_2d_climatology, nh_summer_miss_2d_climatology = return_px_based_hit_miss_percent(nh_summer_climatology,
-                                                                                              nh_summer_gmasi)
+# nh_summer_hits_2d_climatology, nh_summer_miss_2d_climatology = return_px_based_hit_miss_percent(nh_summer_climatology,
+#                                                                                               nh_summer_gmasi)
 
-nh_winter_hits_2d_ml_e, nh_winter_miss_2d_ml_e = return_px_based_hit_miss_percent(nh_winter_ml_e, nh_winter_gmasi,)
+# nh_winter_hits_2d_ml_e, nh_winter_miss_2d_ml_e = return_px_based_hit_miss_percent(nh_winter_ml_e, nh_winter_gmasi,)
 
-nh_winter_hits_2d_ml_ec, nh_winter_miss_2d_ml_ec = return_px_based_hit_miss_percent(nh_winter_ml_ec, nh_winter_gmasi)
+# nh_winter_hits_2d_ml_ec, nh_winter_miss_2d_ml_ec = return_px_based_hit_miss_percent(nh_winter_ml_ec, nh_winter_gmasi)
 
-nh_winter_hits_2d_ml_ecc, nh_winter_miss_2d_ml_ecc = return_px_based_hit_miss_percent(nh_winter_ml_ecc, nh_winter_gmasi)
+# nh_winter_hits_2d_ml_ecc, nh_winter_miss_2d_ml_ecc = return_px_based_hit_miss_percent(nh_winter_ml_ecc, nh_winter_gmasi)
 
-nh_winter_hits_2d_climatology, nh_winter_miss_2d_climatology = return_px_based_hit_miss_percent(nh_winter_climatology,
-                                                                                                nh_winter_gmasi)
+# nh_winter_hits_2d_climatology, nh_winter_miss_2d_climatology = return_px_based_hit_miss_percent(nh_winter_climatology,
+#                                                                                                 nh_winter_gmasi)
 
-nh_arr2_plt = [('ML-E',nh_summer_miss_2d_ml_e, nh_winter_miss_2d_ml_e), 
-               ('ML-EC',nh_summer_miss_2d_ml_ec, nh_winter_miss_2d_ml_ec),
-               ('ML-ECC', nh_summer_miss_2d_ml_ecc, nh_winter_miss_2d_ml_ecc),                      
-               ('CLIM',nh_summer_miss_2d_climatology, nh_winter_miss_2d_climatology)]
+# nh_arr2_plt = [('ML-E',nh_summer_miss_2d_ml_e, nh_winter_miss_2d_ml_e), 
+#                ('ML-EC',nh_summer_miss_2d_ml_ec, nh_winter_miss_2d_ml_ec),
+#                ('ML-ECC', nh_summer_miss_2d_ml_ecc, nh_winter_miss_2d_ml_ecc),                      
+#                ('CLIM',nh_summer_miss_2d_climatology, nh_winter_miss_2d_climatology)]
 
-plot_hemisphere_comparison(nh_arr2_plt,'NH')
+# plot_hemisphere_comparison(nh_arr2_plt,'NH')
 
-svenme = '_'.join(['nh_percent_hit_miss',cde_run_dte]) + '.png'
-plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
-plt.close()
+# svenme = '_'.join(['nh_percent_hit_miss',cde_run_dte]) + '.png'
+# plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
+# plt.close()
 
 #--------------------------------------------------------------------------------------------
 
 # SH 
-sh_summer_hits_2d_ml_e, sh_summer_miss_2d_ml_e = return_px_based_hit_miss_percent(sh_summer_ml_e, sh_summer_gmasi,)
+# sh_summer_hits_2d_ml_e, sh_summer_miss_2d_ml_e = return_px_based_hit_miss_percent(sh_summer_ml_e, sh_summer_gmasi,)
 
-sh_summer_hits_2d_ml_ec, sh_summer_miss_2d_ml_ec = return_px_based_hit_miss_percent(sh_summer_ml_ec, sh_summer_gmasi)
+# sh_summer_hits_2d_ml_ec, sh_summer_miss_2d_ml_ec = return_px_based_hit_miss_percent(sh_summer_ml_ec, sh_summer_gmasi)
 
-sh_summer_hits_2d_ml_ecc, sh_summer_miss_2d_ml_ecc = return_px_based_hit_miss_percent(sh_summer_ml_ecc, sh_summer_gmasi)
+# sh_summer_hits_2d_ml_ecc, sh_summer_miss_2d_ml_ecc = return_px_based_hit_miss_percent(sh_summer_ml_ecc, sh_summer_gmasi)
 
-sh_summer_hits_2d_climatology, sh_summer_miss_2d_climatology = return_px_based_hit_miss_percent(sh_summer_climatology,
-                                                                                              sh_summer_gmasi)
+# sh_summer_hits_2d_climatology, sh_summer_miss_2d_climatology = return_px_based_hit_miss_percent(sh_summer_climatology,
+#                                                                                               sh_summer_gmasi)
 #-------------------------------------
 # SH
-sh_winter_hits_2d_ml_e, sh_winter_miss_2d_ml_e = return_px_based_hit_miss_percent(sh_winter_ml_e,sh_winter_gmasi,)
+# sh_winter_hits_2d_ml_e, sh_winter_miss_2d_ml_e = return_px_based_hit_miss_percent(sh_winter_ml_e,sh_winter_gmasi,)
 
-sh_winter_hits_2d_ml_ec, sh_winter_miss_2d_ml_ec = return_px_based_hit_miss_percent(sh_winter_ml_ec,sh_winter_gmasi)
+# sh_winter_hits_2d_ml_ec, sh_winter_miss_2d_ml_ec = return_px_based_hit_miss_percent(sh_winter_ml_ec,sh_winter_gmasi)
 
-sh_winter_hits_2d_ml_ecc, sh_winter_miss_2d_ml_ecc = return_px_based_hit_miss_percent(sh_winter_ml_ecc, sh_winter_gmasi)
+# sh_winter_hits_2d_ml_ecc, sh_winter_miss_2d_ml_ecc = return_px_based_hit_miss_percent(sh_winter_ml_ecc, sh_winter_gmasi)
 
-sh_winter_hits_2d_climatology, sh_winter_miss_2d_climatology = return_px_based_hit_miss_percent(sh_winter_climatology,
-                                                                                                sh_winter_gmasi)
+# sh_winter_hits_2d_climatology, sh_winter_miss_2d_climatology = return_px_based_hit_miss_percent(sh_winter_climatology,
+#                                                                                                 sh_winter_gmasi)
 
-sh_arr2_plt = [('ML-E',sh_summer_miss_2d_ml_e, sh_winter_miss_2d_ml_e), 
-                   ('ML-EC',sh_summer_miss_2d_ml_ec, sh_winter_miss_2d_ml_ec),
-                   ('ML-ECC',sh_summer_miss_2d_ml_ecc, sh_winter_miss_2d_ml_ecc),                    
-                   ('CLIM',sh_summer_miss_2d_climatology, sh_winter_miss_2d_climatology)]
+# sh_arr2_plt = [('ML-E',sh_summer_miss_2d_ml_e, sh_winter_miss_2d_ml_e), 
+#                    ('ML-EC',sh_summer_miss_2d_ml_ec, sh_winter_miss_2d_ml_ec),
+#                    ('ML-ECC',sh_summer_miss_2d_ml_ecc, sh_winter_miss_2d_ml_ecc),                    
+#                    ('CLIM',sh_summer_miss_2d_climatology, sh_winter_miss_2d_climatology)]
 
-plot_hemisphere_comparison(sh_arr2_plt,'SH')
-svenme = '_'.join(['sh_percent_hit_miss',cde_run_dte]) + '.png'
-plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
-plt.close()
+# plot_hemisphere_comparison(sh_arr2_plt,'SH')
+# svenme = '_'.join(['sh_percent_hit_miss',cde_run_dte]) + '.png'
+# plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
+# plt.close()
 
-print('done with hemispheric pixel wise percent mismatch/disagreement computations')
+# print('done with hemispheric pixel wise percent mismatch/disagreement computations')
 #%%
 
 # resample the differences over a month and year
@@ -1956,105 +1956,42 @@ area_extent_diff_yr = area_extent[col2resample].resample('Y').mean()
 # area_extent_anom_yearly_avg = pd.DataFrame(area_extent_anom_yearly_avg.filter(items=filter_items))
 # area_extent_anom_yearly_avg = area_extent_anom_yearly_avg.transpose()
 # Table 5
-area_extent_anom_yearly_avg = pd.DataFrame(area_extent[filter_items].mean(),columns=['mean'])
+area_extent_anom_yearly_avg = pd.DataFrame(area_extent_computed[filter_items].mean(),
+                                           columns=['mean'])
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_period',cde_run_dte])+ '.csv'
 area_extent_anom_yearly_avg.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_season',cde_run_dte])+ '.csv'
-area_extent['month'] = area_extent.index.month
-area_extent['season'] = area_extent['month'].apply(get_season)
+area_extent_computed['month'] = area_extent_computed.index.month
+area_extent_computed['season'] = area_extent_computed['month'].apply(get_season)
 area_extent_seasonal_mean = area_extent.groupby('season')[filter_items].mean()
 area_extent_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 # Table S2
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_year_60N',cde_run_dte])+ '.csv'
-area_ext_60n_anom_yearl_avg = pd.DataFrame(area_ext_reg_60n[filter_items].mean(),columns=['mean'])
+area_ext_60n_anom_yearl_avg = pd.DataFrame(area_extent_computed_60n[filter_items].mean()
+                                           ,columns=['mean'])
 
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_season_60N',cde_run_dte])+ '.csv'
-area_ext_reg_60n['month'] = area_ext_reg_60n.index.month
-area_ext_reg_60n['season'] = area_ext_reg_60n['month'].apply(get_season)
-area_ext_reg_60n_seasonal_mean = area_ext_reg_60n.groupby('season')[filter_items].mean()
+area_ext_reg_60n['month'] = area_extent_computed_60n.index.month
+area_ext_reg_60n['season'] = area_extent_computed_60n['month'].apply(get_season)
+area_ext_reg_60n_seasonal_mean = area_extent_computed_60n.groupby('season')[filter_items].mean()
 area_ext_reg_60n_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
 #----------------------------------------------------------------------------------------
 print('make time series plot of area extent - Figure 8')
 
 # Call the function with your data
 # Figure 8
-plot_time_series(area_extent)
-
-def plot_time_series_4x1(area_extent_df):
-    # Define colors for each model or dataset
-    colors = ['orange', 'g', 'm', 'b']
-
-    # Convert index to datetime if it isn't already
-    area_extent_df.index = pd.to_datetime(area_extent_df.index)
-
-    # Creating subplots
-    fig, axes = plt.subplots(4, 1, figsize=(15, 10), sharex=True, dpi=1000,
-                             gridspec_kw={'height_ratios': [1]*4})
-    plt.subplots_adjust(hspace=0.4, bottom=0.1, left=0.12)
-
-    # Plotting
-    variables = ['wtr', 'snfr', 'snc', 'ice']
-    titles = ['Water', 'Snow free', 'Snow cover', 'Ice']
-    lws = [1, 1.5, 3, 1]
-    lss = ['-', '-.', ':', '-']
-    for i, ax in enumerate(axes):
-        var = variables[i]
-        for model, lab, color, lw, ls in zip(['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], 
-                                             ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], colors, lws, lss):
-            ax.plot(area_extent_df.index, area_extent_df[f'{model}_{var}_total_area_diff'], 
-                    label=lab, color=color, lw=lw, ls=ls)
-
-       # Set titles and adjust axes
-        ax.set_title(titles[i], fontsize=18, loc='left')
-        # Show only January and July on the x-axis
-        ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 7]))  # Major ticks for January and July
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))  # Format as "Jan 1988, Jul 1988"
-        ax.grid(True)
-
-        # Adding seasonal shading
-        for year in range(area_extent_df.index.year.min(), area_extent_df.index.year.max() + 1):
-            winter_start = pd.Timestamp(year=year, month=12, day=1)
-            winter_end = pd.Timestamp(year=year + 1, month=2, day=28)
-            summer_start = pd.Timestamp(year=year, month=6, day=1)
-            summer_end = pd.Timestamp(year=year, month=8, day=31)
-
-            # Shade the January-February winter months of the first year
-            if year == area_extent_df.index.year.min():
-                winter_start_ = pd.Timestamp(year=year, month=1, day=1)
-                winter_end_ = pd.Timestamp(year=year, month=2, day=28)
-                ax.axvspan(winter_start_, winter_end_, color='lightblue', alpha=0.3)  # Winter
-
-            ax.axvspan(winter_start, winter_end, color='lightblue', alpha=0.3)  # Winter
-            ax.axvspan(summer_start, summer_end, color='lightgrey', alpha=0.3)  # Summer
-
-    for ax in axes:
-        ax.minorticks_on()
-        ax.tick_params(which='both', direction='in', top=True, 
-                       right=True, bottom=True, left=True, labelsize=15)
-        ax.grid(which='major', linestyle='--', linewidth='0.5', color='grey')
-
-    # Labels and legend
-    fig.text(0.5, 0.04, 'Year', ha='center', va='center', fontsize=18)
-    fig.text(0.06, 0.5, 'Percent bias in area extent [%]', va='center', 
-             rotation='vertical', fontsize=18)
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.02), 
-               ncol=4, columnspacing=1, frameon=False, fontsize=18)
-
-    # Save or display
-    # plt.show()
+# plot_time_series(area_extent)
 
 plot_time_series_4x1(area_extent_computed)
-
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
 plot_time_series_4x1(area_extent_computed_60n)
-
-svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
+svenme = '_'.join(['percentage_bias_in_extent_anomaly_60N',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
