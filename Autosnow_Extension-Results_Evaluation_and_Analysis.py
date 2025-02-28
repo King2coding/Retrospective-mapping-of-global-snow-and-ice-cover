@@ -1610,7 +1610,7 @@ def process_file(file_path):
 #-----------------------------------------------------------
 def parallel_process_files_(file_paths):
     results = []
-    with ThreadPoolExecutor(max_workers=15) as executor:
+    with ThreadPoolExecutor(max_workers=20) as executor:
         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
         for future in as_completed(future_to_file):
@@ -1712,7 +1712,7 @@ sh_autumn_px_cnt = pd.DataFrame()
 
 print('Main parallel execution has begun')
 files = sorted(all_autosnow_files) # List of file paths
-aggregated_results = parallel_process_files(files)
+aggregated_results = parallel_process_files_(files)
 print('done!')
 
 svnem_csv = '_'.join(['daily_percent_mismatch_analysis',cde_run_dte])+ '.csv'
