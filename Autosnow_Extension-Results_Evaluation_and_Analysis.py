@@ -52,9 +52,9 @@ path_to_clim_only_autosnw_estimated = r'/ra1/pubdat/AVHRR_CloudSat_proj/Autosnow
 
 path_to_era5_based_snowice = r'/ra1/pubdat/AVHRR_CloudSat_proj/Autosnow_archive_1987_june2023/extending_autosnow_estimated/global_snow_icer_cover_estimated_using_era5_snow_and_seaice_cover'
 
-path_to_put_df = r'/home/kkumah/Autosnow_extending/results/dfs/save_dfs_Nov_2024'
+path_to_put_df = r'/home/kkumah/Projects/Autosnow_extending/results/dfs/save_df_Feb2025'
 
-path_to_put_plots = r'/home/kkumah/Autosnow_extending/results/plots/save_plots_Nov_2024'
+path_to_put_plots = r'/home/kkumah/Projects/Autosnow_extending/results/plots/save_plots_Feb2025'
 
 path_to_put_ancillary = r'/ra1/pubdat/AVHRR_CloudSat_proj/Autosnow_archive_1987_june2023/ancillary_hit_miss_maps'
 
@@ -64,6 +64,7 @@ path_to_rutgers_data = r'/ra1/pubdat/AVHRR_CloudSat_proj/Rutgers_24km_NH_SCE'
 
 path_to_era5_vars = r'/ra1/pubdat/AVHRR_CloudSat_proj/ERA5_multi_variables/era5_daily_data_for_extending_autosnow'
 
+dir_of_diff_est_meth = r'/ra1/pubdat/AVHRR_CloudSat_proj/Autosnow_archive_1987_june2023/extending_autosnow_estimated'
 #%%
 # decalre global variables
 all_autosnow_files = [os.path.join(path_to_autosnow_data,a) for a in os.listdir(path_to_autosnow_data) if (int(a.split('_')[4][:4]) >=1988) and (int(a.split('_')[4][:4]) <=1991)]
@@ -1223,7 +1224,7 @@ def plot_percent_hit_mis(arrs2plot,ext,ytcks):
 
 #----------------------------------------------------------------------------------------
 def process_file(file_path):
-# for l in sorted(all_autosnow_files[:100]):   
+# for l in sorted(all_autosnow_files):   
 #     file_path = l
 
     yr_DOY = os.path.basename(file_path).split('_')[4]
@@ -1247,20 +1248,20 @@ def process_file(file_path):
     #------------------------------------------------------
     # read files
     # estimates 
-    ml_e_estimated_arr = read_processed_files(path_to_estimated_autosnw, 
-                                              ['RF_estimated_autosnow_using_only_ERA5_data',
-                                              yr_DOY,'0.1deg_wgs'],'.tif')
-    ml_ec_estimated_arr = read_processed_files(path_to_estimated_autosnw, 
-                                               ['RF_estimated_autosnow_using_alldataclim',
-                                              yr_DOY,'0.1deg_wgs'],'.tif')
+    path_ = os.path.join(dir_of_diff_est_meth,'ML-E-approach_based_estimates')
+    ml_e_estimated_arr = read_processed_files(path_, ['ML-E',yr_DOY,'0.1deg_wgs'],'.nc')
     
-    ml_ecc_estimated_arr = read_processed_files(path_to_estimated_autosnw,
-                                                ['corrected_RF_estimated_autosnow_using_alldataclim',
-                                                yr_DOY,'0.1deg_wgs'],'.tif')
+    path_ = os.path.join(dir_of_diff_est_meth,'ML-EC-approach_based_estimates')
+
+    ml_ec_estimated_arr = read_processed_files(path_, ['ML-EC',yr_DOY,'0.1deg_wgs'],'.nc')
     
-    climatology_estimated_arr = read_processed_files(path_to_clim_only_autosnw_estimated, 
-                                                     ['alldata_1992_2022_clim_subsetted_by_airTemp',
-                                              yr_DOY,'0.1deg_wgs'],'.tif')
+    path_ = os.path.join(dir_of_diff_est_meth,'ML-ECC-approach_based_estimates')
+    
+    ml_ecc_estimated_arr = read_processed_files(path_, ['ML-ECC',yr_DOY,'0.1deg_wgs'],'.nc')
+    
+    path_ = os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates') 
+    nmeprt='CLIM-approach_estimate_based_on_1992_2022_Autosnow_clim_subsetted_by_airTemp'
+    climatology_estimated_arr = read_processed_files(path_, [nmeprt, yr_DOY,'0.1deg_wgs'],'.nc')
     
     # the original autosnow data
     gmais_dat = xr.open_dataarray(file_path) 
@@ -1575,6 +1576,18 @@ def process_file(file_path):
     # calculate area for regional analysis 60N
     calcualte_total_area(area_ext_reg_60n,ml_e_arr_60_nh, path_to_put_intermediate_files,
                          yr_DOY, date_time, 'ML-E', integer_list, meta_crs, meta_trns)
+    
+    calcualte_total_area(area_ext_reg_60n,ml_ec_arr_60_nh, path_to_put_intermediate_files,
+                         yr_DOY, date_time, 'ML-EC', integer_list, meta_crs, meta_trns)
+    
+    calcualte_total_area(area_ext_reg_60n,ml_ecc_arr_60_nh, path_to_put_intermediate_files,
+                         yr_DOY, date_time, 'ML-ECC', integer_list, meta_crs, meta_trns)
+    
+    calcualte_total_area(area_ext_reg_60n,clim_arr_60_nh, path_to_put_intermediate_files,
+                         yr_DOY, date_time, 'CLIM', integer_list, meta_crs, meta_trns)
+    
+    calcualte_total_area(area_ext_reg_60n,gmasi_arr_60_nh, path_to_put_intermediate_files,
+                         yr_DOY, date_time, 'GMASI', integer_list, meta_crs, meta_trns)
     #------------------------------------------------------
 
     ml_e_cnt = count_class_pixels(ml_e_estimated_arr.astype(np.int16)) 
@@ -1636,6 +1649,8 @@ def parallel_process_files(file_paths, max_workers=15):
     return results
 
 #%%
+# area_ext_reg_60n_cpy = area_ext_reg_60n.copy()
+
 print('begin reading data and compiling evaluation data')
 ml_e_glb_bskt = []
 ml_ec_glb_bskt = []
@@ -1674,6 +1689,7 @@ sh_winter_ml_ecc, sh_spring_ml_ecc, sh_summer_ml_ecc, sh_autumn_ml_ecc = [], [],
 
 #---------------------------------------------------------------------
 count = 0
+# area_ext_reg_60n_cpy = area_ext_reg_60n.copy()
 
 hit_miss_df = pd.DataFrame()
 area_extent = pd.DataFrame()
@@ -1693,7 +1709,7 @@ sh_summer_px_cnt = pd.DataFrame()
 sh_autumn_px_cnt = pd.DataFrame()
 
 print('Main parallel execution has begun')
-files = sorted(all_autosnow_files)  # List of file paths
+files = sorted(all_autosnow_files)[:100]  # List of file paths
 aggregated_results = parallel_process_files_(files)
 print('done!')
 
