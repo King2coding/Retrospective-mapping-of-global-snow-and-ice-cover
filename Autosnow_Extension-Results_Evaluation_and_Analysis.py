@@ -38,8 +38,6 @@ import xarray as xr
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from concurrent.futures import ProcessPoolExecutor
 
 
 #%%
@@ -157,6 +155,7 @@ tropical_mask = (lats >= -25) & (lats <= 25) & (lsm == 1)
 3: ice
 """
 
+clim_nmeprt='CLIM-approach_estimate_based_on_1992_2022_Autosnow_clim_subsetted_by_airTemp'
 
 #%%
 # define fucntions
@@ -1250,362 +1249,376 @@ def process_file(file_path):
     #------------------------------------------------------
     # read files
     # estimates 
-    path_ = os.path.join(dir_of_diff_est_meth,'ML-E-approach_based_estimates')
-    ml_e_estimated_arr = read_processed_files(path_, ['ML-E',yr_DOY,'0.1deg_wgs'],'.nc')
-    
-    path_ = os.path.join(dir_of_diff_est_meth,'ML-EC-approach_based_estimates')
+    # make file names and check if they all exist
+    mle_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-E-approach_based_estimates'),
+                            'ML-E_' + yr_DOY + '_0.1deg_wgs.nc')
 
-    ml_ec_estimated_arr = read_processed_files(path_, ['ML-EC',yr_DOY,'0.1deg_wgs'],'.nc')
+    mlec_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-EC-approach_based_estimates'),
+                            'ML-EC_' + yr_DOY + '_0.1deg_wgs.nc')
+
+    mlecc_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-ECC-approach_based_estimates'),
+                            'ML-ECC_' + yr_DOY + '_0.1deg_wgs.nc')
+
+    clim_file = os.path.join(os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates'),
+                            clim_nmeprt + '_' + yr_DOY + '_0.1deg_wgs.nc')
     
-    path_ = os.path.join(dir_of_diff_est_meth,'ML-ECC-approach_based_estimates')
-    
-    ml_ecc_estimated_arr = read_processed_files(path_, ['ML-ECC',yr_DOY,'0.1deg_wgs'],'.nc')
-    
-    path_ = os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates') 
-    nmeprt='CLIM-approach_estimate_based_on_1992_2022_Autosnow_clim_subsetted_by_airTemp'
-    climatology_estimated_arr = read_processed_files(path_, [nmeprt, yr_DOY,'0.1deg_wgs'],'.nc')
-    
-    # the original autosnow data
-    gmais_dat = xr.open_dataarray(file_path) 
-    gmasi_dat_array = gmais_dat.data[0,:,:]
-    gmasi_dat_array = np.where(gmasi_dat_array > 3,np.nan,gmasi_dat_array)
-    y_shp,x_shp = gmasi_dat_array.shape[0],gmasi_dat_array.shape[1]    
+    if ((os.path.isfile(mle_file)) and (os.path.isfile(mlec_file)) (os.path.isfile(mlecc_file)) and \
+        (os.path.isfile(clim_file)) and (os.path.isfile(file_path))):
+
+        # read files
+        ml_e_estimated_arr = read_processed_files(path_, ['ML-E',yr_DOY,'0.1deg_wgs'],'.nc')       
+
+        ml_ec_estimated_arr = read_processed_files(path_, ['ML-EC',yr_DOY,'0.1deg_wgs'],'.nc')
         
-    date_time_ = date_time    
-
-    print(date_time_)       
-
-    # calculate hit/miss in %
-    get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_e_estimated_arr, 'ML-E', date_time, integer_list)
-    get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_ec_estimated_arr, 'ML-EC', date_time, integer_list)
-    get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_ecc_estimated_arr, 'ML-ECC', date_time, integer_list)
-    get_percent_hitmiss(hit_miss_df, gmasi_dat_array, climatology_estimated_arr, 'CLIM', date_time, integer_list)
-      
-    #------------------------------------------------------
-
-    # do hit/miss in % per class
-    df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_e_estimated_arr, date_time, 'ML-E')
-    df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_ec_estimated_arr, date_time, 'ML-EC')
-    df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_ecc_estimated_arr, date_time, 'ML-ECC')
-    df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, climatology_estimated_arr, date_time, 'CLIM')   
-
-    #------------------------------------------------------
-
-    # append estimates and original to baskets
-    ml_e_glb_bskt.append(ml_e_estimated_arr)
-
-    ml_ec_glb_bskt.append(ml_ec_estimated_arr)
-
-    climatology_glb_bskt.append(climatology_estimated_arr)
-
-    ml_ecc_glb_bskt.append(ml_ecc_estimated_arr)
-
-    
-    gmasi_glb_bskt.append(gmasi_dat_array) 
-    gc.collect()
-    #------------------------------------------------------
-    # get regional 60 degree lat N data
-    ml_e_arr_60_nh = ml_e_estimated_arr[0:nh_row60[0],:].astype(np.int16)
-
-    ml_ec_arr_60_nh = ml_ec_estimated_arr[0:nh_row60[0],:].astype(np.int16)
-
-    ml_ecc_arr_60_nh = ml_ecc_estimated_arr[0:nh_row60[0],:].astype(np.int16)
-
-    clim_arr_60_nh = climatology_estimated_arr[0:nh_row60[0],:].astype(np.int16)
-
-    gmasi_arr_60_nh = gmasi_dat_array[0:nh_row60[0],:].astype(np.int16)
-    #------------------------------------------------------
-
-    # segregate the data into different lists according NH, SH and seasons
-    ml_e_arr_nh = ml_e_estimated_arr[0:nh_row[0],:].astype(np.int16)
-    ml_e_nh.append(ml_e_arr_nh)
-
-    ml_e_arr_sh = ml_e_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
-    ml_e_sh.append(ml_e_arr_sh)
-    #-------------------
-
-    gmasi_arr_nh = gmasi_dat_array[0:nh_row[0],:].astype(np.int16)
-    gmasi_nh.append(gmasi_arr_nh)
-
-    gmasi_arr_sh = gmasi_dat_array[sh_row[0]:y_shp,:].astype(np.int16)
-    gmasi_sh.append(gmasi_arr_sh)
-    #-------------------
-
-    ml_ec_arr_nh = ml_ec_estimated_arr[0:nh_row[0],:].astype(np.int16)
-    ml_ec_nh.append(ml_ec_arr_nh)
-
-    ml_ec_arr_sh = ml_ec_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
-    ml_ec_sh.append(ml_ec_arr_sh)
-    #-------------------
-
-    climatology_arr_nh = climatology_estimated_arr[0:nh_row[0],:].astype(np.int16)
-    climatology_nh.append(climatology_arr_nh)
-
-    climatology_arr_sh = climatology_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
-    climatology_sh.append(climatology_arr_sh)
-
-    #-------------------
-
-    ml_ecc_arr_nh = ml_ecc_estimated_arr[0:nh_row[0],:].astype(np.int16)
-    ml_ecc_nh.append(ml_ecc_arr_nh)
-
-    ml_ecc_arr_sh = ml_ecc_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
-    ml_ecc_sh.append(ml_ecc_arr_sh)    
-    
-#------------------------------------------------------
-    # do the extent comparison at the seasonal level
-    # NH
-    
-    ml_e_cnt_nh = count_class_pixels(ml_e_arr_nh)
-    ml_ec_cnt_nh = count_class_pixels(ml_ec_arr_nh)
-    ml_ecc_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
-    climatology_cnt_nh = count_class_pixels(climatology_arr_nh)
-    gmasi_cnt_nh = count_class_pixels(gmasi_arr_nh)
-    # e_cnt_nh = count_class_pixels(e_arr_nh)    
-
-    populate_df_count(nh_px_cnt, ml_e_cnt_nh, date_time, 'ML-E')
-    populate_df_count(nh_px_cnt, ml_ec_cnt_nh, date_time, 'ML-EC')
-    populate_df_count(nh_px_cnt, ml_ecc_cnt_nh, date_time, 'ML-ECC')
-    populate_df_count(nh_px_cnt, climatology_cnt_nh, date_time, 'CLIM')
-    populate_df_count(nh_px_cnt, gmasi_cnt_nh, date_time, 'GMASI')      
-
-    #---------------------------------------------------
-    # SH
-    
-
-    ml_e_cnt_sh = count_class_pixels(ml_e_arr_sh)
-    ml_ec_cnt_sh = count_class_pixels(ml_ec_arr_sh)
-    ml_ecc_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
-    climatology_cnt_sh = count_class_pixels(climatology_arr_sh)
-    gmasi_cnt_sh = count_class_pixels(gmasi_arr_sh)
-    
-    populate_df_count(sh_px_cnt, ml_e_cnt_sh, date_time, 'ML-E')
-    populate_df_count(sh_px_cnt, ml_ec_cnt_sh, date_time, 'ML-EC')
-    populate_df_count(sh_px_cnt, ml_ecc_cnt_sh, date_time, 'ML-ECC')
-    populate_df_count(sh_px_cnt, climatology_cnt_sh, date_time, 'CLIM')
-    populate_df_count(sh_px_cnt, gmasi_cnt_sh, date_time, 'GMASI')       
-    #----------------------------------------------------
-
-    # append based on season and hemisphere
-    season_nh = find_season(mnth,'Northern')
-    if season_nh is 'Winter':        
-        nh_winter_ml_e.append(ml_e_arr_nh) 
-        nh_winter_gmasi.append(gmasi_arr_nh)      
-        nh_winter_ml_ec.append(ml_ec_arr_nh)  
-        nh_winter_climatology.append(climatology_arr_nh) 
-        nh_winter_ml_ecc.append(ml_ecc_arr_nh)        
-
-        ml_e_winter_cnt_nh = count_class_pixels(ml_e_arr_nh)
-        ml_ec_winter_cnt_nh = count_class_pixels(ml_ec_arr_nh)
-        ml_ecc_winter_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
-        climatology_winter_cnt_nh = count_class_pixels(climatology_arr_nh)
-        gmasi_winter_cnt_nh = count_class_pixels(gmasi_arr_nh)
-
-        populate_df_count(nh_winter_px_cnt, ml_e_winter_cnt_nh, date_time, 'ML-E')
-        populate_df_count(nh_winter_px_cnt, ml_ec_winter_cnt_nh, date_time, 'ML-EC')
-        populate_df_count(nh_winter_px_cnt, ml_ecc_winter_cnt_nh, date_time, 'ML-ECC')
-        populate_df_count(nh_winter_px_cnt, climatology_winter_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_winter_px_cnt, gmasi_winter_cnt_nh, date_time, 'GMASI')              
-
-        #----------------------------------------------------
-
-    elif season_nh is 'Spring':        
-        nh_spring_ml_e.append(ml_e_arr_nh)
-        nh_spring_gmasi.append(gmasi_arr_nh)   
-        nh_spring_ml_ec.append(ml_ec_arr_nh) 
-        nh_spring_climatology.append(climatology_arr_nh) 
-        nh_spring_ml_ecc.append(ml_ecc_arr_nh)        
-
-        ml_e_spring_cnt_nh = count_class_pixels(ml_e_arr_nh)
-        ml_ec_spring_cnt_nh = count_class_pixels(ml_ec_arr_nh)
-        ml_ecc_spring_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
-        climatology_spring_cnt_nh = count_class_pixels(climatology_arr_nh)
-        gmasi_spring_cnt_nh = count_class_pixels(gmasi_arr_nh)
-
-        populate_df_count(nh_spring_px_cnt, ml_e_spring_cnt_nh, date_time, 'ML-E')
-        populate_df_count(nh_spring_px_cnt, ml_ec_spring_cnt_nh, date_time, 'ML-EC')
-        populate_df_count(nh_spring_px_cnt, ml_ecc_spring_cnt_nh, date_time, 'ML-ECC')
-        populate_df_count(nh_spring_px_cnt, climatology_spring_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_spring_px_cnt, gmasi_spring_cnt_nh, date_time, 'GMASI')                      
-
-        #----------------------------------------------------
-
-    elif season_nh is 'Summer':
-        nh_summer_ml_e.append(ml_e_arr_nh)
-        nh_summer_gmasi.append(gmasi_arr_nh)
-        nh_summer_ml_ec.append(ml_ec_arr_nh)
-        nh_summer_climatology.append(climatology_arr_nh)
-        nh_summer_ml_ecc.append(ml_ecc_arr_nh)        
-
-        ml_e_summer_cnt_nh = count_class_pixels(ml_e_arr_nh)
-        ml_ec_summer_cnt_nh = count_class_pixels(ml_ec_arr_nh)
-        ml_ecc_summer_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
-        climatology_summer_cnt_nh = count_class_pixels(climatology_arr_nh)
-        gmasi_summer_cnt_nh = count_class_pixels(gmasi_arr_nh)
-
-        populate_df_count(nh_summer_px_cnt, ml_e_summer_cnt_nh, date_time, 'ML-E')
-        populate_df_count(nh_summer_px_cnt, ml_ec_summer_cnt_nh, date_time, 'ML-EC')
-        populate_df_count(nh_summer_px_cnt, ml_ecc_summer_cnt_nh, date_time, 'ML-ECC')
-        populate_df_count(nh_summer_px_cnt, climatology_summer_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_summer_px_cnt, gmasi_summer_cnt_nh, date_time, 'GMASI')              
-
-        #----------------------------------------------------
-
-    elif season_nh is 'Autumn':
-        nh_autumn_ml_e.append(ml_e_arr_nh)
-        nh_autumn_gmasi.append(gmasi_arr_nh)
-        nh_autumn_ml_ec.append(ml_ec_arr_nh)
-        nh_autumn_climatology.append(climatology_arr_nh)
-        nh_autumn_ml_ecc.append(ml_ecc_arr_nh)
+        path_ = os.path.join(dir_of_diff_est_meth,'ML-ECC-approach_based_estimates')
         
-        ml_e_autumn_cnt_nh = count_class_pixels(ml_e_arr_nh)
-        ml_ec_autumn_cnt_nh = count_class_pixels(ml_ec_arr_nh)
-        ml_ecc_autumn_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
-        climatology_autumn_cnt_nh = count_class_pixels(climatology_arr_nh)
-        gmasi_autumn_cnt_nh = count_class_pixels(gmasi_arr_nh) 
-
-        populate_df_count(nh_autumn_px_cnt, ml_e_autumn_cnt_nh, date_time, 'ML-E')
-        populate_df_count(nh_autumn_px_cnt, ml_ec_autumn_cnt_nh, date_time, 'ML-EC')
-        populate_df_count(nh_autumn_px_cnt, ml_ecc_autumn_cnt_nh, date_time, 'ML-ECC')
-        populate_df_count(nh_autumn_px_cnt, climatology_autumn_cnt_nh, date_time, 'CLIM')
-        populate_df_count(nh_autumn_px_cnt, gmasi_autumn_cnt_nh, date_time, 'GMASI')   
-
-        #----------------------------------------------------
-
-    season_sh = find_season(mnth,'Southern')
-    if season_sh is 'Winter':
-        sh_winter_ml_e.append(ml_e_arr_sh)
-        sh_winter_gmasi.append(gmasi_arr_sh)
-        sh_winter_ml_ec.append(ml_ec_arr_sh)
-        sh_winter_climatology.append(climatology_arr_sh)
-        sh_winter_ml_ecc.append(ml_ecc_arr_sh)
+        ml_ecc_estimated_arr = read_processed_files(path_, ['ML-ECC',yr_DOY,'0.1deg_wgs'],'.nc')
         
-        ml_e_winter_cnt_sh = count_class_pixels(ml_e_arr_sh)
-        ml_ec_winter_cnt_sh = count_class_pixels(ml_ec_arr_sh)
-        ml_ecc_winter_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
-        climatology_winter_cnt_sh = count_class_pixels(climatology_arr_sh)
-        gmasi_winter_cnt_sh = count_class_pixels(gmasi_arr_sh)
-
-        populate_df_count(sh_winter_px_cnt, ml_e_winter_cnt_sh, date_time, 'ML-E')
-        populate_df_count(sh_winter_px_cnt, ml_ec_winter_cnt_sh, date_time, 'ML-EC')
-        populate_df_count(sh_winter_px_cnt, ml_ecc_winter_cnt_sh, date_time, 'ML-ECC')
-        populate_df_count(sh_winter_px_cnt, climatology_winter_cnt_sh, date_time, 'CLIM')
-        populate_df_count(sh_winter_px_cnt, gmasi_winter_cnt_sh, date_time, 'GMASI')        
-
-        #----------------------------------------------------
-
-    elif season_sh is 'Spring':
-        sh_spring_ml_e.append(ml_e_arr_sh)
-        sh_spring_gmasi.append(gmasi_arr_sh)
-        sh_spring_ml_ec.append(ml_ec_arr_sh)
-        sh_spring_climatology.append(climatology_arr_sh)
-        sh_spring_ml_ecc.append(ml_ecc_arr_sh)
-                
-        ml_e_spring_cnt_sh = count_class_pixels(ml_e_arr_sh)
-        ml_ec_spring_cnt_sh = count_class_pixels(ml_ec_arr_sh)
-        ml_ecc_spring_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
-        climatology_spring_cnt_sh = count_class_pixels(climatology_arr_sh)
-        gmasi_spring_cnt_sh = count_class_pixels(gmasi_arr_sh)
-
-        populate_df_count(sh_spring_px_cnt, ml_e_spring_cnt_sh, date_time, 'ML-E')
-        populate_df_count(sh_spring_px_cnt, ml_ec_spring_cnt_sh, date_time, 'ML-EC')
-        populate_df_count(sh_spring_px_cnt, ml_ecc_spring_cnt_sh, date_time, 'ML-ECC')
-        populate_df_count(sh_spring_px_cnt, climatology_spring_cnt_sh, date_time, 'CLIM')
-        populate_df_count(sh_spring_px_cnt, gmasi_spring_cnt_sh, date_time, 'GMASI') 
-
-        #----------------------------------------------------
-
-    elif season_sh is 'Summer':
-        sh_summer_ml_e.append(ml_e_arr_sh)
-        sh_summer_gmasi.append(gmasi_arr_sh)  
-        sh_summer_climatology.append(climatology_arr_sh)    
-        sh_summer_ml_ec.append(ml_ec_arr_sh)  
-        sh_summer_ml_ecc.append(ml_ecc_arr_sh) 
+        path_ = os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates') 
         
-        ml_e_summer_cnt_sh = count_class_pixels(ml_e_arr_sh)
-        ml_ec_summer_cnt_sh = count_class_pixels(ml_ec_arr_sh)
-        ml_ecc_summer_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
-        climatology_summer_cnt_sh = count_class_pixels(climatology_arr_sh)
-        gmasi_summer_cnt_sh = count_class_pixels(gmasi_arr_sh)        
+        climatology_estimated_arr = read_processed_files(path_, [clim_nmeprt, yr_DOY,'0.1deg_wgs'],'.nc')
         
-        populate_df_count(sh_summer_px_cnt, ml_e_summer_cnt_sh, date_time, 'ML-E')
-        populate_df_count(sh_summer_px_cnt, ml_ec_summer_cnt_sh, date_time, 'ML-EC')
-        populate_df_count(sh_summer_px_cnt, ml_ecc_summer_cnt_sh, date_time, 'ML-ECC')
-        populate_df_count(sh_summer_px_cnt, climatology_summer_cnt_sh, date_time, 'CLIM')
-        populate_df_count(sh_summer_px_cnt, gmasi_summer_cnt_sh, date_time, 'GMASI')     
+        # the original autosnow data
+        gmais_dat = xr.open_dataarray(file_path) 
+        gmasi_dat_array = gmais_dat.data[0,:,:]
+        gmasi_dat_array = np.where(gmasi_dat_array > 3,np.nan,gmasi_dat_array)
+        y_shp,x_shp = gmasi_dat_array.shape[0],gmasi_dat_array.shape[1]    
+            
+        date_time_ = date_time    
 
-        #----------------------------------------------------
-    elif season_sh is 'Autumn':
-        sh_autumn_ml_e.append(ml_e_arr_sh)
-        sh_autumn_gmasi.append(gmasi_arr_sh)
-        sh_autumn_ml_ec.append(ml_ec_arr_sh) 
-        sh_autumn_climatology.append(climatology_arr_sh) 
-        sh_autumn_ml_ecc.append(ml_ecc_arr_sh)
+        # print(date_time_)       
+
+        # calculate hit/miss in %
+        # get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_e_estimated_arr, 'ML-E', date_time, integer_list)
+        # get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_ec_estimated_arr, 'ML-EC', date_time, integer_list)
+        # get_percent_hitmiss(hit_miss_df, gmasi_dat_array, ml_ecc_estimated_arr, 'ML-ECC', date_time, integer_list)
+        # get_percent_hitmiss(hit_miss_df, gmasi_dat_array, climatology_estimated_arr, 'CLIM', date_time, integer_list)
         
-        ml_e_autumn_cnt_sh = count_class_pixels(ml_e_arr_sh)
-        ml_ec_autumn_cnt_sh = count_class_pixels(ml_ec_arr_sh)
-        ml_ecc_autumn_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
-        climatology_autumn_cnt_sh = count_class_pixels(climatology_arr_sh)
-        gmasi_autumn_cnt_sh = count_class_pixels(gmasi_arr_sh)
+        # #------------------------------------------------------
+
+        # # do hit/miss in % per class
+        # df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_e_estimated_arr, date_time, 'ML-E')
+        # df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_ec_estimated_arr, date_time, 'ML-EC')
+        # df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, ml_ecc_estimated_arr, date_time, 'ML-ECC')
+        # df_hit_miss_per_class(hit_miss_df,gmasi_dat_array, climatology_estimated_arr, date_time, 'CLIM')   
+
+        #------------------------------------------------------
+
+        # append estimates and original to baskets
+        # ml_e_glb_bskt.append(ml_e_estimated_arr)
+
+        # ml_ec_glb_bskt.append(ml_ec_estimated_arr)
+
+        # climatology_glb_bskt.append(climatology_estimated_arr)
+
+        # ml_ecc_glb_bskt.append(ml_ecc_estimated_arr)
+
         
-        populate_df_count(sh_autumn_px_cnt, ml_e_autumn_cnt_sh, date_time, 'ML-E')
-        populate_df_count(sh_autumn_px_cnt, ml_ec_autumn_cnt_sh, date_time, 'ML-EC')
-        populate_df_count(sh_autumn_px_cnt, ml_ecc_autumn_cnt_sh, date_time, 'ML-ECC')
-        populate_df_count(sh_autumn_px_cnt, climatology_autumn_cnt_sh, date_time, 'CLIM')
-        populate_df_count(sh_autumn_px_cnt, gmasi_autumn_cnt_sh, date_time, 'GMASI')
-       
-    #------------------------------------------------------
-    
-    # compare the extent (km^2) per autosnow class estimated by the model and original
-        # RF ERA5 based estimates yr_DOY
+        # gmasi_glb_bskt.append(gmasi_dat_array) 
+        gc.collect()
+        #------------------------------------------------------
+        # get regional 60 degree lat N data
+        ml_e_arr_60_nh = ml_e_estimated_arr[0:nh_row60[0],:].astype(np.int16)
 
-    calcualte_total_area(area_extent, ml_e_estimated_arr, path_to_put_intermediate_files, 
-                         yr_DOY, date_time, 'ML-E', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_extent, ml_ec_estimated_arr, path_to_put_intermediate_files, 
-                         yr_DOY, date_time, 'ML-EC', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_extent, ml_ecc_estimated_arr, path_to_put_intermediate_files, 
-                         yr_DOY, date_time, 'ML-ECC', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_extent, climatology_estimated_arr, path_to_put_intermediate_files, 
-                         yr_DOY, date_time, 'CLIM', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_extent, gmasi_dat_array, path_to_put_intermediate_files, 
-                         yr_DOY, date_time, 'GMASI', integer_list, meta_crs, meta_trns)
-    
-    #------------------------------------------------------
-    # calculate area for regional analysis 60N
-    calcualte_total_area(area_ext_reg_60n,ml_e_arr_60_nh, path_to_put_intermediate_files,
-                         yr_DOY, date_time, 'ML-E', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_ext_reg_60n,ml_ec_arr_60_nh, path_to_put_intermediate_files,
-                         yr_DOY, date_time, 'ML-EC', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_ext_reg_60n,ml_ecc_arr_60_nh, path_to_put_intermediate_files,
-                         yr_DOY, date_time, 'ML-ECC', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_ext_reg_60n,clim_arr_60_nh, path_to_put_intermediate_files,
-                         yr_DOY, date_time, 'CLIM', integer_list, meta_crs, meta_trns)
-    
-    calcualte_total_area(area_ext_reg_60n,gmasi_arr_60_nh, path_to_put_intermediate_files,
-                         yr_DOY, date_time, 'GMASI', integer_list, meta_crs, meta_trns)
-    #------------------------------------------------------
+        ml_ec_arr_60_nh = ml_ec_estimated_arr[0:nh_row60[0],:].astype(np.int16)
 
-    ml_e_cnt = count_class_pixels(ml_e_estimated_arr.astype(np.int16)) 
-    ml_ec_cnt = count_class_pixels(ml_ec_estimated_arr.astype(np.int16)) 
-    ml_ecc_cnt = count_class_pixels(ml_ecc_estimated_arr.astype(np.int16))
-    clim_cnt = count_class_pixels(climatology_estimated_arr.astype(np.int16))
-    gmasi_cnt = count_class_pixels(gmasi_dat_array.astype(np.int16))
+        ml_ecc_arr_60_nh = ml_ecc_estimated_arr[0:nh_row60[0],:].astype(np.int16)
 
-    populate_df_count(px_cnt, ml_e_cnt, date_time, 'ML-E')
-    populate_df_count(px_cnt, ml_ec_cnt, date_time, 'ML-EC')
-    populate_df_count(px_cnt, ml_ecc_cnt, date_time, 'ML-ECC')
-    populate_df_count(px_cnt, clim_cnt, date_time, 'CLIM')
-    populate_df_count(px_cnt, gmasi_cnt, date_time, 'GMASI')          
+        clim_arr_60_nh = climatology_estimated_arr[0:nh_row60[0],:].astype(np.int16)
 
-    # if count % 100 == 0:
-    #     print(str(count) + ' at ' + str(date_time_))  
+        gmasi_arr_60_nh = gmasi_dat_array[0:nh_row60[0],:].astype(np.int16)
+        #------------------------------------------------------
+
+        # segregate the data into different lists according NH, SH and seasons
+    #     ml_e_arr_nh = ml_e_estimated_arr[0:nh_row[0],:].astype(np.int16)
+    #     ml_e_nh.append(ml_e_arr_nh)
+
+    #     ml_e_arr_sh = ml_e_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
+    #     ml_e_sh.append(ml_e_arr_sh)
+    #     #-------------------
+
+    #     gmasi_arr_nh = gmasi_dat_array[0:nh_row[0],:].astype(np.int16)
+    #     gmasi_nh.append(gmasi_arr_nh)
+
+    #     gmasi_arr_sh = gmasi_dat_array[sh_row[0]:y_shp,:].astype(np.int16)
+    #     gmasi_sh.append(gmasi_arr_sh)
+    #     #-------------------
+
+    #     ml_ec_arr_nh = ml_ec_estimated_arr[0:nh_row[0],:].astype(np.int16)
+    #     ml_ec_nh.append(ml_ec_arr_nh)
+
+    #     ml_ec_arr_sh = ml_ec_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
+    #     ml_ec_sh.append(ml_ec_arr_sh)
+    #     #-------------------
+
+    #     climatology_arr_nh = climatology_estimated_arr[0:nh_row[0],:].astype(np.int16)
+    #     climatology_nh.append(climatology_arr_nh)
+
+    #     climatology_arr_sh = climatology_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
+    #     climatology_sh.append(climatology_arr_sh)
+
+    #     #-------------------
+
+    #     ml_ecc_arr_nh = ml_ecc_estimated_arr[0:nh_row[0],:].astype(np.int16)
+    #     ml_ecc_nh.append(ml_ecc_arr_nh)
+
+    #     ml_ecc_arr_sh = ml_ecc_estimated_arr[sh_row[0]:y_shp,:].astype(np.int16)
+    #     ml_ecc_sh.append(ml_ecc_arr_sh)    
+        
+    # #------------------------------------------------------
+    #     # do the extent comparison at the seasonal level
+    #     # NH
+        
+    #     ml_e_cnt_nh = count_class_pixels(ml_e_arr_nh)
+    #     ml_ec_cnt_nh = count_class_pixels(ml_ec_arr_nh)
+    #     ml_ecc_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
+    #     climatology_cnt_nh = count_class_pixels(climatology_arr_nh)
+    #     gmasi_cnt_nh = count_class_pixels(gmasi_arr_nh)
+    #     # e_cnt_nh = count_class_pixels(e_arr_nh)    
+
+    #     populate_df_count(nh_px_cnt, ml_e_cnt_nh, date_time, 'ML-E')
+    #     populate_df_count(nh_px_cnt, ml_ec_cnt_nh, date_time, 'ML-EC')
+    #     populate_df_count(nh_px_cnt, ml_ecc_cnt_nh, date_time, 'ML-ECC')
+    #     populate_df_count(nh_px_cnt, climatology_cnt_nh, date_time, 'CLIM')
+    #     populate_df_count(nh_px_cnt, gmasi_cnt_nh, date_time, 'GMASI')      
+
+    #     #---------------------------------------------------
+    #     # SH
+        
+
+    #     ml_e_cnt_sh = count_class_pixels(ml_e_arr_sh)
+    #     ml_ec_cnt_sh = count_class_pixels(ml_ec_arr_sh)
+    #     ml_ecc_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
+    #     climatology_cnt_sh = count_class_pixels(climatology_arr_sh)
+    #     gmasi_cnt_sh = count_class_pixels(gmasi_arr_sh)
+        
+    #     populate_df_count(sh_px_cnt, ml_e_cnt_sh, date_time, 'ML-E')
+    #     populate_df_count(sh_px_cnt, ml_ec_cnt_sh, date_time, 'ML-EC')
+    #     populate_df_count(sh_px_cnt, ml_ecc_cnt_sh, date_time, 'ML-ECC')
+    #     populate_df_count(sh_px_cnt, climatology_cnt_sh, date_time, 'CLIM')
+    #     populate_df_count(sh_px_cnt, gmasi_cnt_sh, date_time, 'GMASI')       
+    #     #----------------------------------------------------
+
+    #     # append based on season and hemisphere
+    #     season_nh = find_season(mnth,'Northern')
+    #     if season_nh is 'Winter':        
+    #         nh_winter_ml_e.append(ml_e_arr_nh) 
+    #         nh_winter_gmasi.append(gmasi_arr_nh)      
+    #         nh_winter_ml_ec.append(ml_ec_arr_nh)  
+    #         nh_winter_climatology.append(climatology_arr_nh) 
+    #         nh_winter_ml_ecc.append(ml_ecc_arr_nh)        
+
+    #         ml_e_winter_cnt_nh = count_class_pixels(ml_e_arr_nh)
+    #         ml_ec_winter_cnt_nh = count_class_pixels(ml_ec_arr_nh)
+    #         ml_ecc_winter_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
+    #         climatology_winter_cnt_nh = count_class_pixels(climatology_arr_nh)
+    #         gmasi_winter_cnt_nh = count_class_pixels(gmasi_arr_nh)
+
+    #         populate_df_count(nh_winter_px_cnt, ml_e_winter_cnt_nh, date_time, 'ML-E')
+    #         populate_df_count(nh_winter_px_cnt, ml_ec_winter_cnt_nh, date_time, 'ML-EC')
+    #         populate_df_count(nh_winter_px_cnt, ml_ecc_winter_cnt_nh, date_time, 'ML-ECC')
+    #         populate_df_count(nh_winter_px_cnt, climatology_winter_cnt_nh, date_time, 'CLIM')
+    #         populate_df_count(nh_winter_px_cnt, gmasi_winter_cnt_nh, date_time, 'GMASI')              
+
+    #         #----------------------------------------------------
+
+    #     elif season_nh is 'Spring':        
+    #         nh_spring_ml_e.append(ml_e_arr_nh)
+    #         nh_spring_gmasi.append(gmasi_arr_nh)   
+    #         nh_spring_ml_ec.append(ml_ec_arr_nh) 
+    #         nh_spring_climatology.append(climatology_arr_nh) 
+    #         nh_spring_ml_ecc.append(ml_ecc_arr_nh)        
+
+    #         ml_e_spring_cnt_nh = count_class_pixels(ml_e_arr_nh)
+    #         ml_ec_spring_cnt_nh = count_class_pixels(ml_ec_arr_nh)
+    #         ml_ecc_spring_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
+    #         climatology_spring_cnt_nh = count_class_pixels(climatology_arr_nh)
+    #         gmasi_spring_cnt_nh = count_class_pixels(gmasi_arr_nh)
+
+    #         populate_df_count(nh_spring_px_cnt, ml_e_spring_cnt_nh, date_time, 'ML-E')
+    #         populate_df_count(nh_spring_px_cnt, ml_ec_spring_cnt_nh, date_time, 'ML-EC')
+    #         populate_df_count(nh_spring_px_cnt, ml_ecc_spring_cnt_nh, date_time, 'ML-ECC')
+    #         populate_df_count(nh_spring_px_cnt, climatology_spring_cnt_nh, date_time, 'CLIM')
+    #         populate_df_count(nh_spring_px_cnt, gmasi_spring_cnt_nh, date_time, 'GMASI')                      
+
+    #         #----------------------------------------------------
+
+    #     elif season_nh is 'Summer':
+    #         nh_summer_ml_e.append(ml_e_arr_nh)
+    #         nh_summer_gmasi.append(gmasi_arr_nh)
+    #         nh_summer_ml_ec.append(ml_ec_arr_nh)
+    #         nh_summer_climatology.append(climatology_arr_nh)
+    #         nh_summer_ml_ecc.append(ml_ecc_arr_nh)        
+
+    #         ml_e_summer_cnt_nh = count_class_pixels(ml_e_arr_nh)
+    #         ml_ec_summer_cnt_nh = count_class_pixels(ml_ec_arr_nh)
+    #         ml_ecc_summer_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
+    #         climatology_summer_cnt_nh = count_class_pixels(climatology_arr_nh)
+    #         gmasi_summer_cnt_nh = count_class_pixels(gmasi_arr_nh)
+
+    #         populate_df_count(nh_summer_px_cnt, ml_e_summer_cnt_nh, date_time, 'ML-E')
+    #         populate_df_count(nh_summer_px_cnt, ml_ec_summer_cnt_nh, date_time, 'ML-EC')
+    #         populate_df_count(nh_summer_px_cnt, ml_ecc_summer_cnt_nh, date_time, 'ML-ECC')
+    #         populate_df_count(nh_summer_px_cnt, climatology_summer_cnt_nh, date_time, 'CLIM')
+    #         populate_df_count(nh_summer_px_cnt, gmasi_summer_cnt_nh, date_time, 'GMASI')              
+
+    #         #----------------------------------------------------
+
+    #     elif season_nh is 'Autumn':
+    #         nh_autumn_ml_e.append(ml_e_arr_nh)
+    #         nh_autumn_gmasi.append(gmasi_arr_nh)
+    #         nh_autumn_ml_ec.append(ml_ec_arr_nh)
+    #         nh_autumn_climatology.append(climatology_arr_nh)
+    #         nh_autumn_ml_ecc.append(ml_ecc_arr_nh)
+            
+    #         ml_e_autumn_cnt_nh = count_class_pixels(ml_e_arr_nh)
+    #         ml_ec_autumn_cnt_nh = count_class_pixels(ml_ec_arr_nh)
+    #         ml_ecc_autumn_cnt_nh = count_class_pixels(ml_ecc_arr_nh)
+    #         climatology_autumn_cnt_nh = count_class_pixels(climatology_arr_nh)
+    #         gmasi_autumn_cnt_nh = count_class_pixels(gmasi_arr_nh) 
+
+    #         populate_df_count(nh_autumn_px_cnt, ml_e_autumn_cnt_nh, date_time, 'ML-E')
+    #         populate_df_count(nh_autumn_px_cnt, ml_ec_autumn_cnt_nh, date_time, 'ML-EC')
+    #         populate_df_count(nh_autumn_px_cnt, ml_ecc_autumn_cnt_nh, date_time, 'ML-ECC')
+    #         populate_df_count(nh_autumn_px_cnt, climatology_autumn_cnt_nh, date_time, 'CLIM')
+    #         populate_df_count(nh_autumn_px_cnt, gmasi_autumn_cnt_nh, date_time, 'GMASI')   
+
+    #         #----------------------------------------------------
+
+    #     season_sh = find_season(mnth,'Southern')
+    #     if season_sh is 'Winter':
+    #         sh_winter_ml_e.append(ml_e_arr_sh)
+    #         sh_winter_gmasi.append(gmasi_arr_sh)
+    #         sh_winter_ml_ec.append(ml_ec_arr_sh)
+    #         sh_winter_climatology.append(climatology_arr_sh)
+    #         sh_winter_ml_ecc.append(ml_ecc_arr_sh)
+            
+    #         ml_e_winter_cnt_sh = count_class_pixels(ml_e_arr_sh)
+    #         ml_ec_winter_cnt_sh = count_class_pixels(ml_ec_arr_sh)
+    #         ml_ecc_winter_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
+    #         climatology_winter_cnt_sh = count_class_pixels(climatology_arr_sh)
+    #         gmasi_winter_cnt_sh = count_class_pixels(gmasi_arr_sh)
+
+    #         populate_df_count(sh_winter_px_cnt, ml_e_winter_cnt_sh, date_time, 'ML-E')
+    #         populate_df_count(sh_winter_px_cnt, ml_ec_winter_cnt_sh, date_time, 'ML-EC')
+    #         populate_df_count(sh_winter_px_cnt, ml_ecc_winter_cnt_sh, date_time, 'ML-ECC')
+    #         populate_df_count(sh_winter_px_cnt, climatology_winter_cnt_sh, date_time, 'CLIM')
+    #         populate_df_count(sh_winter_px_cnt, gmasi_winter_cnt_sh, date_time, 'GMASI')        
+
+    #         #----------------------------------------------------
+
+    #     elif season_sh is 'Spring':
+    #         sh_spring_ml_e.append(ml_e_arr_sh)
+    #         sh_spring_gmasi.append(gmasi_arr_sh)
+    #         sh_spring_ml_ec.append(ml_ec_arr_sh)
+    #         sh_spring_climatology.append(climatology_arr_sh)
+    #         sh_spring_ml_ecc.append(ml_ecc_arr_sh)
+                    
+    #         ml_e_spring_cnt_sh = count_class_pixels(ml_e_arr_sh)
+    #         ml_ec_spring_cnt_sh = count_class_pixels(ml_ec_arr_sh)
+    #         ml_ecc_spring_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
+    #         climatology_spring_cnt_sh = count_class_pixels(climatology_arr_sh)
+    #         gmasi_spring_cnt_sh = count_class_pixels(gmasi_arr_sh)
+
+    #         populate_df_count(sh_spring_px_cnt, ml_e_spring_cnt_sh, date_time, 'ML-E')
+    #         populate_df_count(sh_spring_px_cnt, ml_ec_spring_cnt_sh, date_time, 'ML-EC')
+    #         populate_df_count(sh_spring_px_cnt, ml_ecc_spring_cnt_sh, date_time, 'ML-ECC')
+    #         populate_df_count(sh_spring_px_cnt, climatology_spring_cnt_sh, date_time, 'CLIM')
+    #         populate_df_count(sh_spring_px_cnt, gmasi_spring_cnt_sh, date_time, 'GMASI') 
+
+    #         #----------------------------------------------------
+
+    #     elif season_sh is 'Summer':
+    #         sh_summer_ml_e.append(ml_e_arr_sh)
+    #         sh_summer_gmasi.append(gmasi_arr_sh)  
+    #         sh_summer_climatology.append(climatology_arr_sh)    
+    #         sh_summer_ml_ec.append(ml_ec_arr_sh)  
+    #         sh_summer_ml_ecc.append(ml_ecc_arr_sh) 
+            
+    #         ml_e_summer_cnt_sh = count_class_pixels(ml_e_arr_sh)
+    #         ml_ec_summer_cnt_sh = count_class_pixels(ml_ec_arr_sh)
+    #         ml_ecc_summer_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
+    #         climatology_summer_cnt_sh = count_class_pixels(climatology_arr_sh)
+    #         gmasi_summer_cnt_sh = count_class_pixels(gmasi_arr_sh)        
+            
+    #         populate_df_count(sh_summer_px_cnt, ml_e_summer_cnt_sh, date_time, 'ML-E')
+    #         populate_df_count(sh_summer_px_cnt, ml_ec_summer_cnt_sh, date_time, 'ML-EC')
+    #         populate_df_count(sh_summer_px_cnt, ml_ecc_summer_cnt_sh, date_time, 'ML-ECC')
+    #         populate_df_count(sh_summer_px_cnt, climatology_summer_cnt_sh, date_time, 'CLIM')
+    #         populate_df_count(sh_summer_px_cnt, gmasi_summer_cnt_sh, date_time, 'GMASI')     
+
+    #         #----------------------------------------------------
+    #     elif season_sh is 'Autumn':
+    #         sh_autumn_ml_e.append(ml_e_arr_sh)
+    #         sh_autumn_gmasi.append(gmasi_arr_sh)
+    #         sh_autumn_ml_ec.append(ml_ec_arr_sh) 
+    #         sh_autumn_climatology.append(climatology_arr_sh) 
+    #         sh_autumn_ml_ecc.append(ml_ecc_arr_sh)
+            
+    #         ml_e_autumn_cnt_sh = count_class_pixels(ml_e_arr_sh)
+    #         ml_ec_autumn_cnt_sh = count_class_pixels(ml_ec_arr_sh)
+    #         ml_ecc_autumn_cnt_sh = count_class_pixels(ml_ecc_arr_sh)
+    #         climatology_autumn_cnt_sh = count_class_pixels(climatology_arr_sh)
+    #         gmasi_autumn_cnt_sh = count_class_pixels(gmasi_arr_sh)
+            
+    #         populate_df_count(sh_autumn_px_cnt, ml_e_autumn_cnt_sh, date_time, 'ML-E')
+    #         populate_df_count(sh_autumn_px_cnt, ml_ec_autumn_cnt_sh, date_time, 'ML-EC')
+    #         populate_df_count(sh_autumn_px_cnt, ml_ecc_autumn_cnt_sh, date_time, 'ML-ECC')
+    #         populate_df_count(sh_autumn_px_cnt, climatology_autumn_cnt_sh, date_time, 'CLIM')
+    #         populate_df_count(sh_autumn_px_cnt, gmasi_autumn_cnt_sh, date_time, 'GMASI')
+        
+        #------------------------------------------------------
+        
+        # compare the extent (km^2) per autosnow class estimated by the model and original
+            # RF ERA5 based estimates yr_DOY
+
+        calcualte_total_area(area_extent, ml_e_estimated_arr, path_to_put_intermediate_files, 
+                            yr_DOY, date_time, 'ML-E', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_extent, ml_ec_estimated_arr, path_to_put_intermediate_files, 
+                            yr_DOY, date_time, 'ML-EC', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_extent, ml_ecc_estimated_arr, path_to_put_intermediate_files, 
+                            yr_DOY, date_time, 'ML-ECC', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_extent, climatology_estimated_arr, path_to_put_intermediate_files, 
+                            yr_DOY, date_time, 'CLIM', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_extent, gmasi_dat_array, path_to_put_intermediate_files, 
+                            yr_DOY, date_time, 'GMASI', integer_list, meta_crs, meta_trns)
+        
+        #------------------------------------------------------
+        # calculate area for regional analysis 60N
+        calcualte_total_area(area_ext_reg_60n,ml_e_arr_60_nh, path_to_put_intermediate_files,
+                            yr_DOY, date_time, 'ML-E', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_ext_reg_60n,ml_ec_arr_60_nh, path_to_put_intermediate_files,
+                            yr_DOY, date_time, 'ML-EC', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_ext_reg_60n,ml_ecc_arr_60_nh, path_to_put_intermediate_files,
+                            yr_DOY, date_time, 'ML-ECC', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_ext_reg_60n,clim_arr_60_nh, path_to_put_intermediate_files,
+                            yr_DOY, date_time, 'CLIM', integer_list, meta_crs, meta_trns)
+        
+        calcualte_total_area(area_ext_reg_60n,gmasi_arr_60_nh, path_to_put_intermediate_files,
+                            yr_DOY, date_time, 'GMASI', integer_list, meta_crs, meta_trns)
+        #------------------------------------------------------
+
+        # ml_e_cnt = count_class_pixels(ml_e_estimated_arr.astype(np.int16)) 
+        # ml_ec_cnt = count_class_pixels(ml_ec_estimated_arr.astype(np.int16)) 
+        # ml_ecc_cnt = count_class_pixels(ml_ecc_estimated_arr.astype(np.int16))
+        # clim_cnt = count_class_pixels(climatology_estimated_arr.astype(np.int16))
+        # gmasi_cnt = count_class_pixels(gmasi_dat_array.astype(np.int16))
+
+        # populate_df_count(px_cnt, ml_e_cnt, date_time, 'ML-E')
+        # populate_df_count(px_cnt, ml_ec_cnt, date_time, 'ML-EC')
+        # populate_df_count(px_cnt, ml_ecc_cnt, date_time, 'ML-ECC')
+        # populate_df_count(px_cnt, clim_cnt, date_time, 'CLIM')
+        # populate_df_count(px_cnt, gmasi_cnt, date_time, 'GMASI')          
+
+        # if count % 100 == 0:
+        #     print(str(count) + ' at ' + str(date_time_))  
 
 #-----------------------------------------------------------
 def parallel_process_files_(file_paths):
@@ -1613,15 +1626,18 @@ def parallel_process_files_(file_paths):
     with ThreadPoolExecutor(max_workers=20) as executor:
         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
-        for future in as_completed(future_to_file):
+        for i, future in enumerate(as_completed(future_to_file)):
             file_path = future_to_file[future]
             try:
                 result = future.result()
                 results.append(result)  # Collect results for aggregation
+                if (i + 1) % 500 == 0:
+                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
             except Exception as exc:
                 print(f'{file_path} generated an exception: {exc}')
-    
-    return results
+        
+        return results
+#-----------------------------------------------------------
 
 def parallel_process_files(file_paths, max_workers=20):
     from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -1640,11 +1656,13 @@ def parallel_process_files(file_paths, max_workers=20):
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
-        for future in as_completed(future_to_file):
+        for i, future in enumerate(as_completed(future_to_file)):
             file_path = future_to_file[future]
             try:
                 result = future.result()
                 results.append(result)  # Collect results for aggregation
+                if (i + 1) % 500 == 0:
+                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
             except Exception as exc:
                 print(f'{file_path} generated an exception: {exc}')
     
@@ -1717,105 +1735,8 @@ print('done!')
 
 svnem_csv = '_'.join(['daily_percent_mismatch_analysis',cde_run_dte])+ '.csv'
 hit_miss_df.to_csv(os.path.join(path_to_put_df,svnem_csv))
-#%%
-# print('begin evaluation')    
-# # the differences in the total pixel count per class classified by the different models and origina (GMASI) data
-# px_cnt['ml_e_gmasi_wtr_diff'] = px_cnt['ml_e_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']# ml_e_wtr_px_cnt
 
-# px_cnt['ml_e_gmasi_snfr_diff'] = px_cnt['ml_e_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
-
-# px_cnt['ml_e_gmasi_snc_diff'] = px_cnt['ml_e_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
-
-# px_cnt['ml_e_gmasi_ice_diff'] = px_cnt['ml_e_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
-
-# #------------------------------------------------------
-# px_cnt['ml_ec_gmasi_wtr_diff'] = px_cnt['ml_ec_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
-
-# px_cnt['ml_ec_gmasi_snfr_diff'] = px_cnt['ml_ec_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
-
-# px_cnt['ml_ec_gmasi_snc_diff'] = px_cnt['ml_ec_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
-
-# px_cnt['ml_ec_gmasi_ice_diff'] = px_cnt['ml_ec_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
-
-# #------------------------------------------------------
-# px_cnt['climatology_gmasi_wtr_diff'] = px_cnt['climatology_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
-
-# px_cnt['climatology_gmasi_snfr_diff'] = px_cnt['climatology_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
-
-# px_cnt['climatology_gmasi_snc_diff'] = px_cnt['climatology_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
-
-# px_cnt['climatology_gmasi_ice_diff'] = px_cnt['climatology_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
-
-# #------------------------------------------------------
-# px_cnt['ml_ecc_gmasi_wtr_diff'] = px_cnt['ml_ecc_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
-
-# px_cnt['ml_ecc_gmasi_snfr_diff'] = px_cnt['ml_ecc_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
-
-# px_cnt['ml_ecc_gmasi_snc_diff'] = px_cnt['ml_ecc_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
-
-# px_cnt['ml_ecc_gmasi_ice_diff'] = px_cnt['ml_ecc_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
-
-#------------------------------------------------------
-# px_cnt['e_gmasi_wtr_diff'] = px_cnt['e_wtr_px_cnt'] - px_cnt['gmasi_wtr_px_cnt']
-
-# px_cnt['e_gmasi_snfr_diff'] = px_cnt['e_snfr_px_cnt'] - px_cnt['gmasi_snfr_px_cnt']
-
-# px_cnt['e_gmasi_snc_diff'] = px_cnt['e_snc_px_cnt'] - px_cnt['gmasi_snc_px_cnt']
-
-# px_cnt['e_gmasi_ice_diff'] = px_cnt['e_ice_px_cnt'] - px_cnt['gmasi_ice_px_cnt']
-
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# the differences in area extent (per class) by the different model and GMASI duirng the vaidation period
-
-
-area_extent_computed = get_area_extent_diffs(area_extent)
-
-area_extent_computed_60n = get_area_extent_diffs(area_ext_reg_60n)
-
-# area_extent['ml_e_gmasi_wtr_diff'] = ((area_extent['ml_e_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
-
-# area_extent['ml_e_gmasi_snfr_diff'] = ((area_extent['ml_e_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
-
-# area_extent['ml_e_gmasi_snc_diff'] = ((area_extent['ml_e_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
-
-# area_extent['ml_e_gmasi_ice_diff'] = ((area_extent['ml_e_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
-
-# #------------------------------------------------------
-# area_extent['ml_ec_gmasi_wtr_diff'] = ((area_extent['ml_ec_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
-
-# area_extent['ml_ec_gmasi_snfr_diff'] = ((area_extent['ml_ec_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
-
-# area_extent['ml_ec_gmasi_snc_diff'] = ((area_extent['ml_ec_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
-
-# area_extent['ml_ec_gmasi_ice_diff'] = ((area_extent['ml_ec_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
-
-# #------------------------------------------------------
-# area_extent['climatology_gmasi_wtr_diff'] = ((area_extent['climatology_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
-
-# area_extent['climatology_gmasi_snfr_diff'] = ((area_extent['climatology_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
-
-# area_extent['climatology_gmasi_snc_diff'] = ((area_extent['climatology_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
-
-# area_extent['climatology_gmasi_ice_diff'] = ((area_extent['climatology_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
-
-# #------------------------------------------------------
-# area_extent['ml_ecc_gmasi_wtr_diff'] = ((area_extent['ml_ecc_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
-
-# area_extent['ml_ecc_gmasi_snfr_diff'] = ((area_extent['ml_ecc_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
-
-# area_extent['ml_ecc_gmasi_snc_diff'] = ((area_extent['ml_ecc_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
-
-# area_extent['ml_ecc_gmasi_ice_diff'] = ((area_extent['ml_ecc_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
-
-#------------------------------------------------------
-# area_extent['e_gmasi_wtr_diff'] = ((area_extent['e_wtr_total_area'] - area_extent['gmasi_wtr_total_area'])/area_extent['gmasi_wtr_total_area'])*100
-
-# area_extent['e_gmasi_snfr_diff'] = ((area_extent['e_snfr_total_area'] - area_extent['gmasi_snfr_total_area'])/area_extent['gmasi_snfr_total_area'])*100
-
-# area_extent['e_gmasi_snc_diff'] = ((area_extent['e_snc_total_area'] - area_extent['gmasi_snc_total_area'])/area_extent['gmasi_snc_total_area'])*100
-
-# area_extent['e_gmasi_ice_diff'] = ((area_extent['e_ice_total_area'] - area_extent['gmasi_ice_total_area'])/area_extent['gmasi_ice_total_area'])*100
-
+#---------------------------------------------------------------------
 print('running disk management')
 # remove intermediate files    
 [os.remove(os.path.join(path_to_put_intermediate_files,x)) for x in os.listdir(path_to_put_intermediate_files) \
@@ -1827,11 +1748,23 @@ print('running disk management')
 [os.remove(os.path.join(path_to_estimated_autosnw,x)) for x in os.listdir(path_to_estimated_autosnw) \
                                 if any(x.endswith(rm) for rm in ['cpg','dbf','shp','prj','shx'])]
 
-# svnem_csv = '_'.join(['area_extent_analysis',cde_run_dte])+ '.csv'
-# area_extent.to_csv(os.path.join(path_to_put_df,svnem_csv))
+#%%
+print('begin evaluation')    
+# the differences in the total pixel count per class classified by the different models and origina (GMASI) data
+px_cnt =   get_px_cnt_diffs(px_cnt)
+svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
+px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# the differences in area extent (per class) by the different model and GMASI duirng the vaidation period
 
-# svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
-# px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
+area_extent_computed = get_area_extent_diffs(area_extent)
+svnem_csv = '_'.join(['area_extent_analysis',cde_run_dte])+ '.csv'
+area_extent.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
+area_extent_computed_60n = get_area_extent_diffs(area_ext_reg_60n)
+svnem_csv = '_'.join(['area_extent_60N_analysis',cde_run_dte])+ '.csv'
+area_extent_computed_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
 #%%
 print('*************** begin match/missmatch calculations ***********************')
 
@@ -1947,9 +1880,9 @@ filter_items = [clmn for clmn in area_extent.columns if 'diff' in clmn]
 # 'e_gmasi_wtr_diff', 'e_gmasi_snfr_diff', 'e_gmasi_snc_diff', 'e_gmasi_ice_diff'
 #--------------------------------------------------------------------------------------------
 
-area_extent_diff_mnth = area_extent[col2resample].resample('M').mean()
+# area_extent_diff_mnth = area_extent[col2resample].resample('M').mean()
 
-area_extent_diff_yr = area_extent[col2resample].resample('Y').mean()
+# area_extent_diff_yr = area_extent[col2resample].resample('Y').mean()
 
 # calculate the average error per class per year
 # area_extent_anom_yearly_avg = area_extent.groupby(area_extent.index.year)[col2resample].mean() # 

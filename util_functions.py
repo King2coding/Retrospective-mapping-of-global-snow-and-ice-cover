@@ -22,6 +22,9 @@ import rasterio
 import xarray as xr
 import netCDF4
 from pyproj import CRS
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor
+
 
 #%%
 # floating variables
@@ -438,9 +441,8 @@ def read_climatology_file(path_to_autosno_climatological_data, name_parts, ext):
 #--------------------------------------------------------------------------------------------------------
 
 # Read estimated files
-def read_processed_files(path_to_data, name_parts, ext):
-    filename = '_'.join(name_parts) + ext
-    filename = os.path.join(path_to_data, filename)
+def read_processed_files(filename):
+    ext = os.path.splitext(filename)[1]
     if ext == '.tif':
         arr = xr.open_dataarray(filename).data[0, :, :]
     else:
@@ -448,8 +450,23 @@ def read_processed_files(path_to_data, name_parts, ext):
     return np.where(arr > 3,np.nan,arr)
 
 #--------------------------------------------------------------------------------------------------------
+def get_px_cnt_diffs(pxcnt_df):
+    df_clmns = [clmns for clmns in pxcnt_df.columns if not 'GMASI' in clmns] 
+    for clmn in df_clmns:
+        if 'wtr' in clmn:
+            gmasi_clmn = 'GMASI_wtr_px_cnt'
+        elif 'snfr' in clmn:
+            gmasi_clmn = 'GMASI_snfr_px_cnt'
+        elif 'snc' in clmn:
+            gmasi_clmn = 'GMASI_snc_px_cnt'
+        elif 'ice' in clmn:
+            gmasi_clmn = 'GMASI_ice_px_cnt'
+
+        pxcnt_df[clmn + '_diff'] = pxcnt_df[clmn] - pxcnt_df[gmasi_clmn]
+    return pxcnt_df
+#--------------------------------------------------------------------------------------------------------
 def get_area_extent_diffs(area_df):
-    df_clmns = [clmns for clmns in area_df.columns if not 'GMASI' in clmns] #area_extent.columns
+    df_clmns = [clmns for clmns in area_df.columns if not 'GMASI' in clmns] 
     for clmn in df_clmns:
         if 'wtr' in clmn:
             gmasi_clmn = 'GMASI_wtr_total_area'
@@ -583,3 +600,4 @@ def compute_area_from_raster(df, dt, arr, resolution_degrees, prdt):
     # df.loc[dt, prdt + '_snfr_total_area'] = get_total_area(arr_to_gdf,1)
     df.loc[dt, prdt + '_snc_total_area'] = total_snow_area_km2
     df.loc[dt, prdt + '_ice_total_area'] = total_ice_area_km2
+
