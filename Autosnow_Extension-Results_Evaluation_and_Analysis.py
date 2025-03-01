@@ -1618,9 +1618,20 @@ def process_file(file_path):
         #     print(str(count) + ' at ' + str(date_time_))  
 
 #-----------------------------------------------------------
-def parallel_process_files_(file_paths):
+def parallel_process_files_(file_paths, max_workers=20):
+
+    """
+    Parallel process a list of file paths using ThreadPoolExecutor.
+    
+    Parameters:
+    - file_paths (list): List of file paths to process.
+    - max_workers (int): Number of worker threads to spawn.
+
+    Returns:
+    - results (list): List of results from processing each file.
+    """
     results = []
-    with ProcessPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
         for i, future in enumerate(as_completed(future_to_file)):
@@ -1632,12 +1643,36 @@ def parallel_process_files_(file_paths):
                     print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
             except Exception as exc:
                 print(f'{file_path} generated an exception: {exc}')
-        
-        return results
+    
+    return results
 #-----------------------------------------------------------
 
 def parallel_process_files(file_paths, max_workers=20):
-    from concurrent.futures import ProcessPoolExecutor, as_completed
+    """
+    Parallel process a list of file paths using ProcessPoolExecutor.
+    
+    Parameters:
+    - file_paths (list): List of file paths to process.
+    - max_workers (int): Number of worker processes to spawn.
+
+    Returns:
+    - results (list): List of results from processing each file.
+    """
+    results = []
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
+        
+        for i, future in enumerate(as_completed(future_to_file)):
+            file_path = future_to_file[future]
+            try:
+                result = future.result()
+                results.append(result)  # Collect results for aggregation
+                if (i + 1) % 500 == 0:
+                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
+            except Exception as exc:
+                print(f'{file_path} generated an exception: {exc}')
+    
+    return results
 
     """
     Parallel process a list of file paths using ProcessPoolExecutor.
