@@ -1623,7 +1623,7 @@ def process_file(file_path):
 #-----------------------------------------------------------
 def parallel_process_files_(file_paths):
     results = []
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ProcessPoolExecutor(max_workers=20) as executor:
         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
         for i, future in enumerate(as_completed(future_to_file)):
@@ -1736,6 +1736,17 @@ print('done!')
 svnem_csv = '_'.join(['daily_percent_mismatch_analysis',cde_run_dte])+ '.csv'
 hit_miss_df.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# the differences in area extent (per class) by the different model and GMASI duirng the vaidation period
+
+area_extent_computed = get_area_extent_diffs(area_extent)
+svnem_csv = '_'.join(['area_extent_analysis',cde_run_dte])+ '.csv'
+area_extent.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
+area_extent_computed_60n = get_area_extent_diffs(area_ext_reg_60n)
+svnem_csv = '_'.join(['area_extent_60N_analysis',cde_run_dte])+ '.csv'
+area_extent_computed_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
 #---------------------------------------------------------------------
 print('running disk management')
 # remove intermediate files    
@@ -1754,16 +1765,6 @@ print('begin evaluation')
 px_cnt =   get_px_cnt_diffs(px_cnt)
 svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
 px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# the differences in area extent (per class) by the different model and GMASI duirng the vaidation period
-
-area_extent_computed = get_area_extent_diffs(area_extent)
-svnem_csv = '_'.join(['area_extent_analysis',cde_run_dte])+ '.csv'
-area_extent.to_csv(os.path.join(path_to_put_df,svnem_csv))
-
-area_extent_computed_60n = get_area_extent_diffs(area_ext_reg_60n)
-svnem_csv = '_'.join(['area_extent_60N_analysis',cde_run_dte])+ '.csv'
-area_extent_computed_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 #%%
 print('*************** begin match/missmatch calculations ***********************')
