@@ -1262,21 +1262,18 @@ def process_file(file_path):
     clim_file = os.path.join(os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates'),
                             clim_nmeprt + '_' + yr_DOY + '_0.1deg_wgs.nc')
     
-    if ((os.path.isfile(mle_file)) and (os.path.isfile(mlec_file)) (os.path.isfile(mlecc_file)) and \
-        (os.path.isfile(clim_file)) and (os.path.isfile(file_path))):
+    if ((os.path.isfile(mle_file)) and (os.path.isfile(mlec_file)) and \
+        (os.path.isfile(mlecc_file)) and (os.path.isfile(clim_file)) and \
+            (os.path.isfile(file_path))):
 
         # read files
-        ml_e_estimated_arr = read_processed_files(path_, ['ML-E',yr_DOY,'0.1deg_wgs'],'.nc')       
+        ml_e_estimated_arr = read_processed_files(mle_file)       
 
-        ml_ec_estimated_arr = read_processed_files(path_, ['ML-EC',yr_DOY,'0.1deg_wgs'],'.nc')
+        ml_ec_estimated_arr = read_processed_files(mlec_file)        
         
-        path_ = os.path.join(dir_of_diff_est_meth,'ML-ECC-approach_based_estimates')
+        ml_ecc_estimated_arr = read_processed_files(mlecc_file)        
         
-        ml_ecc_estimated_arr = read_processed_files(path_, ['ML-ECC',yr_DOY,'0.1deg_wgs'],'.nc')
-        
-        path_ = os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates') 
-        
-        climatology_estimated_arr = read_processed_files(path_, [clim_nmeprt, yr_DOY,'0.1deg_wgs'],'.nc')
+        climatology_estimated_arr = read_processed_files(clim_file)
         
         # the original autosnow data
         gmais_dat = xr.open_dataarray(file_path) 
