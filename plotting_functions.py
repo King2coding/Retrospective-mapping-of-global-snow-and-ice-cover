@@ -64,9 +64,14 @@ def plot_daily_percentage_mismatch(hit_miss_df):
 
 #---------------------------------------------------------------
 # Figure 8
-def plot_time_series_4x1(area_extent_df):
+def plot_time_series_4x1(area_extent_df,plt_term, plt_type):
     # Define colors for each model or dataset
-    colors = ['orange', 'g', 'm', 'b']
+    colors = ['orange', 'g', 'm', 'b','k']
+
+    if plt_type == 'px_cnt':
+        models = ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM', 'GMASI']
+    else:
+        models = ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM']
 
     # Convert index to datetime if it isn't already
     area_extent_df.index = pd.to_datetime(area_extent_df.index)
@@ -79,13 +84,12 @@ def plot_time_series_4x1(area_extent_df):
     # Plotting
     variables = ['wtr', 'snfr', 'snc', 'ice']
     titles = ['Water', 'Snow free', 'Snow cover', 'Ice']
-    lws = [1, 1.5, 3, 1]
-    lss = ['-', '-.', ':', '-']
+    lws = [1, 1.5, 3, 1, 1]
+    lss = ['-', '-.', ':', '-','--']
     for i, ax in enumerate(axes):
         var = variables[i]
-        for model, lab, color, lw, ls in zip(['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], 
-                                             ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM'], colors, lws, lss):
-            ax.plot(area_extent_df.index, area_extent_df[f'{model}_{var}_total_area_diff'], 
+        for model, lab, color, lw, ls in zip(models, models, colors, lws, lss):
+            ax.plot(area_extent_df.index, area_extent_df[f'{model}_{var}_{plt_term}'], 
                     label=lab, color=color, lw=lw, ls=ls)
 
        # Set titles and adjust axes

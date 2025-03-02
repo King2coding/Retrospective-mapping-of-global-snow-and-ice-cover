@@ -1224,9 +1224,156 @@ def plot_percent_hit_mis(arrs2plot,ext,ytcks):
         a.set_yticks(ytcks)    # y-axis from -90 to 90 at intervals of 5       
 
 #----------------------------------------------------------------------------------------
-def process_file(file_path):
-# for l in sorted(all_autosnow_files)[:100]:   
-    # file_path = l
+
+#-----------------------------------------------------------
+def parallel_process_files_(file_paths, max_workers=20):
+
+    """
+    Parallel process a list of file paths using ThreadPoolExecutor.
+    
+    Parameters:
+    - file_paths (list): List of file paths to process.
+    - max_workers (int): Number of worker threads to spawn.
+
+    Returns:
+    - results (list): List of results from processing each file.
+    """
+    results = []
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
+        
+        for i, future in enumerate(as_completed(future_to_file)):
+            file_path = future_to_file[future]
+            try:
+                result = future.result()
+                results.append(result)  # Collect results for aggregation
+                if (i + 1) % 500 == 0:
+                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
+            except Exception as exc:
+                print(f'{file_path} generated an exception: {exc}')
+    
+    return results
+#-----------------------------------------------------------
+
+def parallel_process_files(file_paths, max_workers=20):
+    """
+    Parallel process a list of file paths using ProcessPoolExecutor.
+    
+    Parameters:
+    - file_paths (list): List of file paths to process.
+    - max_workers (int): Number of worker processes to spawn.
+
+    Returns:
+    - results (list): List of results from processing each file.
+    """
+    results = []
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
+        
+        for i, future in enumerate(as_completed(future_to_file)):
+            file_path = future_to_file[future]
+            try:
+                result = future.result()
+                results.append(result)  # Collect results for aggregation
+                if (i + 1) % 500 == 0:
+                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
+            except Exception as exc:
+                print(f'{file_path} generated an exception: {exc}')
+    
+    return results
+
+    """
+    Parallel process a list of file paths using ProcessPoolExecutor.
+    
+    Parameters:
+    - file_paths (list): List of file paths to process.
+    - max_workers (int): Number of worker processes to spawn.
+
+    Returns:
+    - results (list): List of results from processing each file.
+    """
+    results = []
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
+        
+        for i, future in enumerate(as_completed(future_to_file)):
+            file_path = future_to_file[future]
+            try:
+                result = future.result()
+                results.append(result)  # Collect results for aggregation
+                if (i + 1) % 500 == 0:
+                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
+            except Exception as exc:
+                print(f'{file_path} generated an exception: {exc}')
+    
+    return results
+
+#%%
+# area_ext_reg_60n_cpy = area_ext_reg_60n.copy()
+
+print('begin reading data and compiling evaluation data')
+ml_e_glb_bskt = []
+ml_ec_glb_bskt = []
+# e_glb_bskt = []
+climatology_glb_bskt = []
+gmasi_glb_bskt = []
+ml_ecc_glb_bskt = []
+#------------------------------
+
+ml_e_nh, ml_e_sh = [], []
+
+ml_ec_nh, ml_ec_sh = [],[]
+climatology_nh, climatology_sh = [],[]
+# e_nh, e_sh = [],[]
+gmasi_nh, gmasi_sh = [], []
+
+ml_ecc_nh, ml_ecc_sh = [],[]
+#------------------------------
+nh_winter_ml_e, nh_spring_ml_e, nh_summer_ml_e, nh_autumn_ml_e = [], [], [], []
+sh_winter_ml_e, sh_spring_ml_e, sh_summer_ml_e, sh_autumn_ml_e = [], [], [], []
+
+nh_winter_gmasi, nh_spring_gmasi, nh_summer_gmasi, nh_autumn_gmasi = [], [], [], []
+sh_winter_gmasi, sh_spring_gmasi, sh_summer_gmasi, sh_autumn_gmasi = [], [], [], []
+
+nh_winter_ml_ec, nh_spring_ml_ec, nh_summer_ml_ec, nh_autumn_ml_ec = [], [], [], []
+sh_winter_ml_ec, sh_spring_ml_ec, sh_summer_ml_ec, sh_autumn_ml_ec = [], [], [], []
+
+nh_winter_climatology, nh_spring_climatology, nh_summer_climatology, nh_autumn_climatology = [], [], [], []
+sh_winter_climatology, sh_spring_climatology, sh_summer_climatology, sh_autumn_climatology = [], [], [], []
+
+nh_winter_ml_ecc, nh_spring_ml_ecc, nh_summer_ml_ecc, nh_autumn_ml_ecc = [], [], [], []
+sh_winter_ml_ecc, sh_spring_ml_ecc, sh_summer_ml_ecc, sh_autumn_ml_ecc = [], [], [], []
+
+# nh_winter_e, nh_spring_e, nh_summer_e, nh_autumn_e = [], [], [], []
+# sh_winter_e, sh_spring_e, sh_summer_e, sh_autumn_e = [], [], [], []
+
+#---------------------------------------------------------------------
+# area_ext_reg_60n_cpy = area_ext_reg_60n.copy()
+
+hit_miss_df = pd.DataFrame()
+area_extent = pd.DataFrame()
+area_ext_reg_60n = pd.DataFrame()
+px_cnt = pd.DataFrame()
+px_cnt_60n = pd.DataFrame()
+
+nh_px_cnt = pd.DataFrame()
+sh_px_cnt = pd.DataFrame()
+
+nh_winter_px_cnt = pd.DataFrame()
+nh_spring_px_cnt = pd.DataFrame()
+nh_summer_px_cnt = pd.DataFrame()
+nh_autumn_px_cnt = pd.DataFrame()
+
+sh_winter_px_cnt = pd.DataFrame()
+sh_spring_px_cnt = pd.DataFrame()
+sh_summer_px_cnt = pd.DataFrame()
+sh_autumn_px_cnt = pd.DataFrame()
+
+#----------------------------------------------------------------------
+count = 0
+# def process_file(file_path):
+for l in sorted(all_autosnow_files):   
+    file_path = l
 
     yr_DOY = os.path.basename(file_path).split('_')[4]
 
@@ -1639,155 +1786,14 @@ def process_file(file_path):
         populate_df_count(px_cnt_60n, ml_ec_cnt_60n, date_time, 'ML-EC')
         populate_df_count(px_cnt_60n, ml_ecc_cnt_60n, date_time, 'ML-ECC')
         populate_df_count(px_cnt_60n, clim_cnt_60n, date_time, 'CLIM')
-        populate_df_count(px_cnt_60n, gmasi_cnt_60n, date_time, 'GMASI')         
+        populate_df_count(px_cnt_60n, gmasi_cnt_60n, date_time, 'GMASI')  
 
-        # if count % 100 == 0:
-        #     print(str(count) + ' at ' + str(date_time_))  
+        count = count + 1       
 
-#-----------------------------------------------------------
-def parallel_process_files_(file_paths, max_workers=20):
+        if count % 100 == 0:
+            print(str(count) + ' at ' + str(date_time_))  
 
-    """
-    Parallel process a list of file paths using ThreadPoolExecutor.
-    
-    Parameters:
-    - file_paths (list): List of file paths to process.
-    - max_workers (int): Number of worker threads to spawn.
-
-    Returns:
-    - results (list): List of results from processing each file.
-    """
-    results = []
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
-        
-        for i, future in enumerate(as_completed(future_to_file)):
-            file_path = future_to_file[future]
-            try:
-                result = future.result()
-                results.append(result)  # Collect results for aggregation
-                if (i + 1) % 500 == 0:
-                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
-            except Exception as exc:
-                print(f'{file_path} generated an exception: {exc}')
-    
-    return results
-#-----------------------------------------------------------
-
-def parallel_process_files(file_paths, max_workers=20):
-    """
-    Parallel process a list of file paths using ProcessPoolExecutor.
-    
-    Parameters:
-    - file_paths (list): List of file paths to process.
-    - max_workers (int): Number of worker processes to spawn.
-
-    Returns:
-    - results (list): List of results from processing each file.
-    """
-    results = []
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
-        
-        for i, future in enumerate(as_completed(future_to_file)):
-            file_path = future_to_file[future]
-            try:
-                result = future.result()
-                results.append(result)  # Collect results for aggregation
-                if (i + 1) % 500 == 0:
-                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
-            except Exception as exc:
-                print(f'{file_path} generated an exception: {exc}')
-    
-    return results
-
-    """
-    Parallel process a list of file paths using ProcessPoolExecutor.
-    
-    Parameters:
-    - file_paths (list): List of file paths to process.
-    - max_workers (int): Number of worker processes to spawn.
-
-    Returns:
-    - results (list): List of results from processing each file.
-    """
-    results = []
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
-        
-        for i, future in enumerate(as_completed(future_to_file)):
-            file_path = future_to_file[future]
-            try:
-                result = future.result()
-                results.append(result)  # Collect results for aggregation
-                if (i + 1) % 500 == 0:
-                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
-            except Exception as exc:
-                print(f'{file_path} generated an exception: {exc}')
-    
-    return results
-
-#%%
-# area_ext_reg_60n_cpy = area_ext_reg_60n.copy()
-
-print('begin reading data and compiling evaluation data')
-ml_e_glb_bskt = []
-ml_ec_glb_bskt = []
-# e_glb_bskt = []
-climatology_glb_bskt = []
-gmasi_glb_bskt = []
-ml_ecc_glb_bskt = []
-#------------------------------
-
-ml_e_nh, ml_e_sh = [], []
-
-ml_ec_nh, ml_ec_sh = [],[]
-climatology_nh, climatology_sh = [],[]
-# e_nh, e_sh = [],[]
-gmasi_nh, gmasi_sh = [], []
-
-ml_ecc_nh, ml_ecc_sh = [],[]
-#------------------------------
-nh_winter_ml_e, nh_spring_ml_e, nh_summer_ml_e, nh_autumn_ml_e = [], [], [], []
-sh_winter_ml_e, sh_spring_ml_e, sh_summer_ml_e, sh_autumn_ml_e = [], [], [], []
-
-nh_winter_gmasi, nh_spring_gmasi, nh_summer_gmasi, nh_autumn_gmasi = [], [], [], []
-sh_winter_gmasi, sh_spring_gmasi, sh_summer_gmasi, sh_autumn_gmasi = [], [], [], []
-
-nh_winter_ml_ec, nh_spring_ml_ec, nh_summer_ml_ec, nh_autumn_ml_ec = [], [], [], []
-sh_winter_ml_ec, sh_spring_ml_ec, sh_summer_ml_ec, sh_autumn_ml_ec = [], [], [], []
-
-nh_winter_climatology, nh_spring_climatology, nh_summer_climatology, nh_autumn_climatology = [], [], [], []
-sh_winter_climatology, sh_spring_climatology, sh_summer_climatology, sh_autumn_climatology = [], [], [], []
-
-nh_winter_ml_ecc, nh_spring_ml_ecc, nh_summer_ml_ecc, nh_autumn_ml_ecc = [], [], [], []
-sh_winter_ml_ecc, sh_spring_ml_ecc, sh_summer_ml_ecc, sh_autumn_ml_ecc = [], [], [], []
-
-# nh_winter_e, nh_spring_e, nh_summer_e, nh_autumn_e = [], [], [], []
-# sh_winter_e, sh_spring_e, sh_summer_e, sh_autumn_e = [], [], [], []
-
-#---------------------------------------------------------------------
-count = 0
-# area_ext_reg_60n_cpy = area_ext_reg_60n.copy()
-
-hit_miss_df = pd.DataFrame()
-area_extent = pd.DataFrame()
-area_ext_reg_60n = pd.DataFrame()
-px_cnt = pd.DataFrame()
-px_cnt_60n = pd.DataFrame()
-
-nh_px_cnt = pd.DataFrame()
-sh_px_cnt = pd.DataFrame()
-
-nh_winter_px_cnt = pd.DataFrame()
-nh_spring_px_cnt = pd.DataFrame()
-nh_summer_px_cnt = pd.DataFrame()
-nh_autumn_px_cnt = pd.DataFrame()
-
-sh_winter_px_cnt = pd.DataFrame()
-sh_spring_px_cnt = pd.DataFrame()
-sh_summer_px_cnt = pd.DataFrame()
-sh_autumn_px_cnt = pd.DataFrame()
+#----------------------------------------------------------------------
 
 print('Main parallel execution has begun')
 files = sorted(all_autosnow_files)[:365] # List of file paths
@@ -1823,7 +1829,7 @@ svnem_csv = '_'.join(['area_extent_60N_analysis',cde_run_dte])+ '.csv'
 area_ext_reg_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 # Table 5
-area_extent_anom_yearly_avg = pd.DataFrame(area_extent_[filter_items].mean(),
+area_extent_anom_yearly_avg = pd.DataFrame(area_extent[filter_items].mean(),
                                            columns=['mean'])
 
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_period',cde_run_dte])+ '.csv'
@@ -1833,10 +1839,8 @@ svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_season'
 area_extent['month'] = area_extent.index.month
 area_extent['season'] = area_extent['month'].apply(get_season)
 # Ensure all columns in desired_order exist in the DataFrame
-existing_columns = [col for col in desired_order if col in area_extent.columns]
 
 area_extent_seasonal_mean = area_extent.groupby('season')[filter_items].mean()[desired_order]
-[existing_columns]
 area_extent_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 # Table S2
@@ -1859,15 +1863,19 @@ print('make time series plot of area extent - Figure 8')
 # Figure 8
 # plot_time_series(area_extent)
 
-plot_time_series_4x1(area_extent)
+plot_time_series_4x1(area_extent,'total_area_diff','diff')
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
-plot_time_series_4x1(area_ext_reg_60n)
+plot_time_series_4x1(area_ext_reg_60n,'total_area_diff','diff')
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_60N',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
+
+plot_time_series_4x1(px_cnt_60n,'px_cnt','px_cnt')
+
+plot_time_series_4x1(px_cnt_60n,'px_cnt_diff','diff')
 
 print('done')
 #---------------------------------------------------------------------
@@ -1888,6 +1896,11 @@ print('begin evaluation')
 px_cnt =   get_px_cnt_diffs(px_cnt)
 svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
 px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
+px_cnt_60n =   get_px_cnt_diffs(px_cnt_60n)
+svnem_csv = '_'.join(['grid_population_analysis_60N',cde_run_dte])+ '.csv'
+px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
 
 #%%
 print('*************** begin match/missmatch calculations ***********************')
