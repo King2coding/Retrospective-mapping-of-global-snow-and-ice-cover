@@ -13,23 +13,32 @@ from datetime import datetime, timedelta, date
 import os
 import gc
 
-import geopandas as gpd
-import fiona
-from osgeo import osr
-from rasterio import features
-import rioxarray as rio
-import rasterio
 import xarray as xr
 import netCDF4
 from pyproj import CRS
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import ProcessPoolExecutor
 
+import geopandas as gpd
+import fiona
+from osgeo import osr
+from rasterio import features
+import rioxarray as rio
+import rasterio
+from rasterio import transform
+
+
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
+from eval_functions import *
 
 #%%
 # floating variables
 cc_epsg = CRS.from_authority(code=4326,auth_name='EPSG')
 
+integer_list = [0, 1, 2, 3]
+classes = ['Water', 'Snow-free Land', 'Snow-covered Land', 'Ice']
 
 season_months = {
     'winter': [12, 1, 2],
@@ -150,6 +159,79 @@ def count_occurrences(lst, target):
     return count
 
 #-----------------------------------------------------------------------------------------
+def count_metric_compute(extent_df,cl_elm,met_elm):
+    
+    met_df_lst = [] 
+    prdc_lst,class_lst,cc_lst,kge_lst,rmse_lst,nrmse_lst,mape_lst,rb_lst = [],[],[],[],[],[],[],[]
+
+    for m in met_elm:      
+
+        prdc_to_ana,ana_elem = m[0],m[1]   
+
+        for e in ana_elem:       
+
+            sim_column,obs_column = e[0],e[1]
+
+            clss = list(set(sim_column.split('_')).intersection(set(cl_elm)))[0]
+
+            if clss == 'wtr':
+                clss_cal = 'Water'
+            elif clss == 'snfr':
+                clss_cal = 'Snow free'
+            elif clss == 'snc':
+                clss_cal = 'Snow cover'
+            elif clss == 'ice':
+                clss_cal = 'Ice'
+
+            sim_dat, obs_dat = extent_df[sim_column], extent_df[obs_column]
+
+            cc_val = round(p_corr(obs_dat,sim_dat),2)
+            kge_val = round(kge2012(obs_dat,sim_dat)[-1],2)
+            rmse_val = round(rmsqe(obs_dat,sim_dat),2)
+            rb_val = round(relative_bias(obs_dat,sim_dat)*100,2)
+            nrmse_val = round(nrmsqe(obs_dat,sim_dat),2)
+            mape_val = round(he.mape(sim_dat, obs_dat,remove_neg=True),2) # mean abs % error
+
+            prdc_lst.append(prdc_to_ana)
+            class_lst.append(clss_cal)
+            cc_lst.append(cc_val)
+            rmse_lst.append(rmse_val)
+            rb_lst.append(rb_val)
+            nrmse_lst.append(nrmse_val)
+            kge_lst.append(kge_val)
+            mape_lst.append(mape_val)
+
+    extent_metrics_df = pd.DataFrame({'Class': class_lst, 'Product': prdc_lst, 
+                                      'CC': cc_lst, 'KGE': kge_lst, 'RMSE': rmse_lst, 
+                                      'RB':rb_lst, 'NRMSE': nrmse_lst,'MAPE': mape_lst})
+    met_df_lst.append(extent_metrics_df)
+
+    all_met_df = pd.concat(met_df_lst,axis=0)
+
+    all_met_df.sort_values(by='Class',inplace=True,ascending=False)
+
+    return all_met_df
+
+#-----------------------------------------------------------------------------------------
+def cat_metrcs_computed(sym_lst,org_lst):
+    cat_df_lst = []
+
+    for s in sym_lst:
+
+        cat_prdct,sim_lst = s[0],s[1]
+
+        print(cat_prdct)
+
+        cat_eval_lst_sim = [org_lst, sim_lst]
+
+        cat_eval_df = cat_evaluate(cat_eval_lst_sim,cat_prdct)
+
+        cat_df_lst.append(cat_eval_df)
+        
+    all_cat_df = pd.concat(cat_df_lst,axis=0)
+    all_cat_df.sort_values(by='Class',ascending=False,inplace=True)
+    return all_cat_df
+#-----------------------------------------------------------------------------------------
 def count_class_pixels(arr):
     """
     Count the total number of pixels in the array with values for each class (0, 1, 2, 3).
@@ -177,6 +259,117 @@ def count_class_pixels(arr):
     
     return class_counts
 
+#---------------------------------------------------
+def cat_evaluate(lst_of_arrays, prdct):
+
+    orig_arrs = lst_of_arrays[0]
+
+    # Loop through the list and modify each array in place
+    for i in range(len(orig_arrs)):
+        orig_arrs[i] = orig_arrs[i].astype(np.int8)
+    del(i)
+
+    rf_arrs = lst_of_arrays[1]
+    for i in range(len(rf_arrs)):
+        rf_arrs[i] = rf_arrs[i].astype(np.int8)
+    del(i)
+
+    orig_1d = make_nd_arr(orig_arrs)
+    rf_1d = make_nd_arr(rf_arrs)
+
+    gc.collect()
+
+    arr_stck = np.column_stack((orig_1d,rf_1d))
+    arr_stck = arr_stck.astype(np.int8)
+    
+    # arr_stck = arr_stck[~np.isnan(arr_stck).any(axis=1)]
+
+    processed_arr_stck = process_in_chunks(arr_stck, 100000)
+
+    df_obs_pred = pd.DataFrame(processed_arr_stck,columns=['test','pred']) # ,dtype=np.int8
+
+    # Convert dtypes after creation
+    df_obs_pred = df_obs_pred.astype(np.int8)  # Converting all columns to int8
+
+    # get the count per class
+    n_per_class_in_y = pd.DataFrame(df_obs_pred['test'].value_counts())
+    n_per_class_in_y.sort_index(inplace=True)
+    n_per_class_in_y['Class']  = classes # per it with the class names
+
+    del(orig_1d, rf_1d,arr_stck)
+
+    gc.collect()
+
+    #---------------------#------------------
+
+    # here we evaluate per class
+    lst_cat_stats = []
+    for i in enumerate(classes):
+
+        tval = float(i[0])
+
+        class_val = i[1]
+
+        lst_cat_stats.append(binary_cat_metrics(df_obs_pred,'test','pred',tval,class_val))
+
+    dfs_cat_stats = pd.concat(lst_cat_stats,axis=0)
+
+    dfs_cat_stats = dfs_cat_stats.merge(n_per_class_in_y[['count', 'Class']],right_on='Class',
+                                        left_on=dfs_cat_stats.index)
+
+    dfs_cat_stats['label'] = dfs_cat_stats.index
+
+    dfs_cat_stats.index = dfs_cat_stats['Class']
+
+    dfs_cat_stats.drop(columns='Class',inplace=True)
+
+    dfs_cat_stats = pd.DataFrame(dfs_cat_stats.filter(items=['count','Hits', 'Miss', 'label',
+                                                             'POD', 'FAR', 'Bias', 'CSI']))
+    dfs_cat_stats['Product'] = prdct
+    dfs_cat_stats = pd.DataFrame(dfs_cat_stats.filter(items=['Product','count','Hits', 'Miss', 'label',
+                                                             'POD', 'FAR', 'Bias','CSI']))
+
+    del(df_obs_pred)
+
+    return dfs_cat_stats
+
+#---------------------------------------------------
+
+def calculate_seasonal_means(df, columns, season):
+    """
+    Calculate the mean of specified columns in a dataframe for a given season.
+
+    Args:
+    df (pd.DataFrame): Input dataframe with datetime index.
+    columns (list): List of column names to calculate the mean.
+    season (str): Season to filter by ('winter', 'spring', 'summer', 'autumn').
+
+    Returns:
+    pd.Series: Mean of the specified columns for the given season.
+    """
+    # Season month mapping
+    season_months = {
+        'winter': [12, 1, 2],
+        'spring': [3, 4, 5],
+        'summer': [6, 7, 8],
+        'autumn': [9, 10, 11]
+    }
+    
+    # Check if the season is valid
+    if season not in season_months:
+        raise ValueError(f"Invalid season '{season}'. Choose from 'winter', 'spring', 'summer', 'autumn'.")
+    
+    # Filter the dataframe for the months corresponding to the season
+    mask = df.index.month.isin(season_months[season])
+    season_df = df.loc[mask]
+    
+    # Calculate mean of the specified columns
+    mean_values = season_df[columns].mean()
+
+    std_values = season_df[columns].std()
+    
+    return mean_values, std_values
+#---------------------------------------------------
 #-----------------------------------------------------------------------------------------
 def populate_df_count(df, count_dict, dt, prdt):
     df.loc[dt, prdt +'_wtr_px_cnt'] = count_dict[0]
@@ -223,29 +416,6 @@ def rasterio_based_save_array_to_disk(path,savename,metadata,arrayTosave):
         mp.write(arrayTosave,indexes=1)
 
 #--------------------------------------------------------------------------------------------------------
-import rasterio
-from affine import Affine
-
-def create_geotransform_rasterio_60N(resolution=0.1):
-    """
-    Creates an affine transform for a raster covering 60°N to 90°N globally.
-    
-    Args:
-        resolution (float): Grid resolution in degrees (default 0.1°).
-    
-    Returns:
-        Affine: Rasterio affine transformation object.
-    """
-    # Define spatial bounds
-    lon_min, lon_max = -180.0, 180.0  # Global longitudes
-    lat_min, lat_max = 60.0, 90.0  # Northern Hemisphere poleward of 60°N
-
-    # Define Affine transformation (left, pixel width, rotation, top, rotation, pixel height)
-    transform = Affine.translation(lon_min, lat_max) * Affine.scale(resolution, -resolution)
-
-    return transform
-
-# Example usage
 
 #--------------------------------------------------------------------------------------------------------
 # function to polygionize an array maps
@@ -627,3 +797,138 @@ def compute_area_from_raster(df, dt, arr, resolution_degrees, prdt):
     df.loc[dt, prdt + '_snc_total_area'] = total_snow_area_km2
     df.loc[dt, prdt + '_ice_total_area'] = total_ice_area_km2
 
+#--------------------------------------------------------------------------------------------------------
+def extract_method_surface_type(index):
+    parts = index.split('_')
+    method = '_'.join([parts[0],parts[1]])
+    surface_type = [i for i in parts if i in ['wtr', 'snfr', 'snc', 'ice']][0]
+    return method, surface_type
+#--------------------------------------------------------------------------------------------------------
+
+# fcuntion to make big 1d data from list of arrays
+def make_nd_arr(array_lst):
+
+    # Create a 3D array by stacking the 2D arrays along the third axis
+    arr3d = np.stack(array_lst, axis=2).astype(np.int8)    
+    arr1d = arr3d.reshape(-1)
+    del(arr3d)
+    return arr1d
+
+#---------------------------------------------------
+# fucntion to make nd array
+def make_nd_array_(bkst_arrs,yshp,x_shp):
+    '''
+    requires 
+    bkst_arrs = list of arrays
+    yshp = number of rows in array, i.e. array.shape[0]
+    '''
+
+    arr_3d = np.dstack(bkst_arrs)        
+
+    arr_1d = arr_3d.reshape((yshp*x_shp*arr_3d.shape[2]))
+
+    del(arr_3d)
+
+    gc.collect()
+
+    return arr_1d
+
+#---------------------------------------------------
+def process_in_chunks(arr, chunk_size):
+    # Placeholder for the processed parts
+    processed_parts = []
+    
+    # Calculate the number of chunks
+    num_chunks = np.ceil(arr.shape[0] / chunk_size).astype(int)
+    
+    for i in range(num_chunks):
+        # Calculate start and end indices of the current chunk
+        start_idx = i * chunk_size
+        end_idx = min((i + 1) * chunk_size, arr.shape[0])
+        
+        # Extract the chunk
+        chunk = arr[start_idx:end_idx]
+        
+        # Filter out NaN rows in the chunk and convert dtype
+        filtered_chunk = chunk[~np.isnan(chunk).any(axis=1)].astype(np.int8)
+        
+        # Store the processed chunk
+        processed_parts.append(filtered_chunk)
+
+        gc.collect()
+    
+    # Combine processed parts back into a single array
+    return np.concatenate(processed_parts, axis=0)
+
+
+def make_2d_hit_miss_map(pred_arr_lst,observ_arr_lst,kind):
+
+    arr_yshp,arr_xshp = pred_arr_lst[0].shape[0], pred_arr_lst[0].shape[1]
+
+    pred_3d_arr = np.dstack(pred_arr_lst)
+    obs_3d_arr = np.dstack(observ_arr_lst)
+
+    lst_row_col_idx = []
+
+    for row in range(0,arr_yshp):
+
+        for col in range(0,arr_xshp):
+
+            id_tuple = tuple((row,col))
+
+            lst_row_col_idx.append(id_tuple)
+    
+    out_arr = np.empty(pred_arr_lst[0].shape,dtype=np.int32)
+
+    for i in lst_row_col_idx:
+
+        pred_lst = pred_3d_arr[i[0],i[1],:]
+        obs_lst = obs_3d_arr[i[0],i[1],:]
+
+        out_arr[i[0],i[1]] = calculate_hits_miss(pred_lst,obs_lst,integer_list,kind)
+
+    del(pred_3d_arr,obs_3d_arr,arr_xshp,arr_yshp,lst_row_col_idx,
+        row,col,id_tuple,pred_lst,obs_lst)
+    
+    gc.collect()
+
+    return out_arr
+#--------------------------------------------------------------------------
+
+# define function to geodata frame
+def get_gdf(array,flnme,reg, path_to_put_intermediate_files,meta):
+    vec_flnme = os.path.join(path_to_put_intermediate_files,os.path.basename(flnme).replace('.tif',reg + '.shp'))
+    array = array.astype(np.int16).copy()    
+    gdffrme = array_to_vector(array, vec_flnme, integer_list, meta['crs'] ,meta['transform'])  
+    return gdffrme
+
+#----------------------------------------------
+# Define a function to determine the position based on the data density
+def find_best_position(ax, x_data, y_data):
+    # Get the axis bounds
+    x_bounds = ax.get_xlim()
+    y_bounds = ax.get_ylim()
+    
+    # Define grid size and create bins within the axis bounds
+    grid_size = 10
+    x_bins = np.linspace(*x_bounds, grid_size)
+    y_bins = np.linspace(*y_bounds, grid_size)
+    
+    # Create a 2D histogram of the data to find the density of points
+    hist, x_edges, y_edges = np.histogram2d(x_data, y_data, bins=(x_bins, y_bins))
+    
+    # Find the index of the bin with the lowest count
+    min_density_idx = np.unravel_index(np.argmin(hist, axis=None), hist.shape)
+    
+    # Get the position for the text
+    # We choose the upper edge of the bin with the lowest count
+    x_pos = x_edges[min_density_idx[1]]
+    y_pos = y_edges[min_density_idx[0]]
+    
+    # Adjust the position to be within the bounds and visible
+    x_pos = max(min(x_pos, x_bounds[1] * 0.95), x_bounds[0] * 1.05)
+    y_pos = max(min(y_pos, y_bounds[1] * 0.95), y_bounds[0] * 1.05)
+    
+    return x_pos, y_pos
+
+#----------------------------------------------
