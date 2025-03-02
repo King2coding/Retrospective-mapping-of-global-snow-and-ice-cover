@@ -1250,17 +1250,32 @@ def process_file(file_path):
     # read files
     # estimates 
     # make file names and check if they all exist
-    mle_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-E-approach_based_estimates'),
-                            'ML-E_' + yr_DOY + '_0.1deg_wgs.nc')
+    # mle_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-E-approach_based_estimates'),
+    #                         'ML-E_' + yr_DOY + '_0.1deg_wgs.nc')
 
-    mlec_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-EC-approach_based_estimates'),
-                            'ML-EC_' + yr_DOY + '_0.1deg_wgs.nc')
+    mle_file = os.path.join(path_to_estimated_autosnw,
+                            '_'.join(['RF_estimated_autosnow_using_only_ERA5_data',
+                                                                     yr_DOY,'0.1deg_wgs']) + '.tif')
 
-    mlecc_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-ECC-approach_based_estimates'),
-                            'ML-ECC_' + yr_DOY + '_0.1deg_wgs.nc')
+    # mlec_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-EC-approach_based_estimates'),
+    #                         'ML-EC_' + yr_DOY + '_0.1deg_wgs.nc')
+    mlec_file = os.path.join(path_to_estimated_autosnw,
+                             '_'.join(['RF_estimated_autosnow_using_alldataclim',
+                                                                      yr_DOY,'0.1deg_wgs']) + '.tif')
 
-    clim_file = os.path.join(os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates'),
-                            clim_nmeprt + '_' + yr_DOY + '_0.1deg_wgs.nc')
+    # mlecc_file = os.path.join(os.path.join(dir_of_diff_est_meth,'ML-ECC-approach_based_estimates'),
+    #                         'ML-ECC_' + yr_DOY + '_0.1deg_wgs.nc')
+
+    mlecc_file = os.path.join(path_to_estimated_autosnw,
+                                '_'.join(['corrected_RF_estimated_autosnow_using_alldataclim',
+                                            yr_DOY,'0.1deg_wgs']) + '.tif')
+
+    # clim_file = os.path.join(os.path.join(dir_of_diff_est_meth,'CLIM-approach_based_estimates'),
+    #                         clim_nmeprt + '_' + yr_DOY + '_0.1deg_wgs.nc')
+
+    clim_file = os.path.join(path_to_clim_only_autosnw_estimated,
+                             '_'.join(['alldata_1992_2022_clim_subsetted_by_airTemp',
+                                    yr_DOY,'0.1deg_wgs']) + '.tif')
     
     if ((os.path.isfile(mle_file)) and (os.path.isfile(mlec_file)) and \
         (os.path.isfile(mlecc_file)) and (os.path.isfile(clim_file)) and \
@@ -1761,7 +1776,7 @@ sh_summer_px_cnt = pd.DataFrame()
 sh_autumn_px_cnt = pd.DataFrame()
 
 print('Main parallel execution has begun')
-files = sorted(all_autosnow_files) # List of file paths
+files = sorted(all_autosnow_files)[:20] # List of file paths
 aggregated_results = parallel_process_files_(files)
 print('done!')
 
@@ -1771,13 +1786,13 @@ hit_miss_df.to_csv(os.path.join(path_to_put_df,svnem_csv))
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # the differences in area extent (per class) by the different model and GMASI duirng the vaidation period
 
-area_extent_computed = get_area_extent_diffs(area_extent)
+area_extent = get_area_extent_diffs(area_extent)
 svnem_csv = '_'.join(['area_extent_analysis',cde_run_dte])+ '.csv'
 area_extent.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
-area_extent_computed_60n = get_area_extent_diffs(area_ext_reg_60n)
+area_ext_reg_60n = get_area_extent_diffs(area_ext_reg_60n)
 svnem_csv = '_'.join(['area_extent_60N_analysis',cde_run_dte])+ '.csv'
-area_extent_computed_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
+area_ext_reg_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 #---------------------------------------------------------------------
 print('running disk management')
@@ -1922,26 +1937,36 @@ filter_items = [clmn for clmn in area_extent.columns if 'diff' in clmn]
 # area_extent_anom_yearly_avg = pd.DataFrame(area_extent_anom_yearly_avg.filter(items=filter_items))
 # area_extent_anom_yearly_avg = area_extent_anom_yearly_avg.transpose()
 # Table 5
-area_extent_anom_yearly_avg = pd.DataFrame(area_extent_computed[filter_items].mean(),
+area_extent_anom_yearly_avg = pd.DataFrame(area_extent[filter_items].mean(),
                                            columns=['mean'])
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_period',cde_run_dte])+ '.csv'
 area_extent_anom_yearly_avg.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_season',cde_run_dte])+ '.csv'
-area_extent_computed['month'] = area_extent_computed.index.month
-area_extent_computed['season'] = area_extent_computed['month'].apply(get_season)
+area_extent['month'] = area_extent.index.month
+area_extent['season'] = area_extent['month'].apply(get_season)
 area_extent_seasonal_mean = area_extent.groupby('season')[filter_items].mean()
 area_extent_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 # Table S2
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_year_60N',cde_run_dte])+ '.csv'
-area_ext_60n_anom_yearl_avg = pd.DataFrame(area_extent_computed_60n[filter_items].mean()
+area_ext_60n_anom_yearl_avg = pd.DataFrame(area_ext_reg_60n[filter_items].mean()
                                            ,columns=['mean'])
+area_ext_60n_anom_yearl_avg.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 svnem_csv = '_'.join(['average_errors_in_land_cover_extent_during_val_by_season_60N',cde_run_dte])+ '.csv'
-area_ext_reg_60n['month'] = area_extent_computed_60n.index.month
-area_ext_reg_60n['season'] = area_extent_computed_60n['month'].apply(get_season)
-area_ext_reg_60n_seasonal_mean = area_extent_computed_60n.groupby('season')[filter_items].mean()
+area_ext_reg_60n['month'] = area_ext_reg_60n.index.month
+area_ext_reg_60n['season'] = area_ext_reg_60n['month'].apply(get_season)
+# Rearrange the columns in the desired order
+desired_order = [
+    'ML-E_wtr_total_area_diff', 'ML-EC_wtr_total_area_diff', 'ML-ECC_wtr_total_area_diff', 'CLIM_wtr_total_area_diff',
+    'ML-E_snfr_total_area_diff', 'ML-EC_snfr_total_area_diff', 'ML-ECC_snfr_total_area_diff', 'CLIM_snfr_total_area_diff',
+    'ML-E_snc_total_area_diff', 'ML-EC_snc_total_area_diff', 'ML-ECC_snc_total_area_diff', 'CLIM_snc_total_area_diff',
+    'ML-E_ice_total_area_diff', 'ML-EC_ice_total_area_diff', 'ML-ECC_ice_total_area_diff', 'CLIM_ice_total_area_diff'
+]
+
+area_ext_reg_60n_seasonal_mean = area_ext_reg_60n.groupby('season')[filter_items].mean()[desired_order]
+
 area_ext_reg_60n_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
 #----------------------------------------------------------------------------------------
@@ -1951,12 +1976,12 @@ print('make time series plot of area extent - Figure 8')
 # Figure 8
 # plot_time_series(area_extent)
 
-plot_time_series_4x1(area_extent_computed)
+plot_time_series_4x1(area_extent)
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
-plot_time_series_4x1(area_extent_computed_60n)
+plot_time_series_4x1(area_ext_reg_60n)
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_60N',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
