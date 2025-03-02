@@ -802,11 +802,13 @@ px_cnt =   get_px_cnt_diffs(px_cnt)
 svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
 px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
+px_cnt_60n.index = pd.to_datetime(px_cnt_60n.index)
+px_cnt_60n.sort_index(inplace=True)
 px_cnt_60n =   get_px_cnt_diffs(px_cnt_60n)
 svnem_csv = '_'.join(['grid_population_analysis_60N',cde_run_dte])+ '.csv'
-px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
+px_cnt_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
-
+gc.collect()
 #%%
 print('*************** 3.3 Spatiotemporal intercomparison ***********************')
 
