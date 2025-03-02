@@ -223,7 +223,31 @@ def rasterio_based_save_array_to_disk(path,savename,metadata,arrayTosave):
         mp.write(arrayTosave,indexes=1)
 
 #--------------------------------------------------------------------------------------------------------
+import rasterio
+from affine import Affine
 
+def create_geotransform_rasterio_60N(resolution=0.1):
+    """
+    Creates an affine transform for a raster covering 60°N to 90°N globally.
+    
+    Args:
+        resolution (float): Grid resolution in degrees (default 0.1°).
+    
+    Returns:
+        Affine: Rasterio affine transformation object.
+    """
+    # Define spatial bounds
+    lon_min, lon_max = -180.0, 180.0  # Global longitudes
+    lat_min, lat_max = 60.0, 90.0  # Northern Hemisphere poleward of 60°N
+
+    # Define Affine transformation (left, pixel width, rotation, top, rotation, pixel height)
+    transform = Affine.translation(lon_min, lat_max) * Affine.scale(resolution, -resolution)
+
+    return transform
+
+# Example usage
+
+#--------------------------------------------------------------------------------------------------------
 # function to polygionize an array maps
 def array_to_vector(array, out_vector_file, mask_values,crs_item,trns):  
 
@@ -549,6 +573,8 @@ def calcualte_total_area(df, arr, intermediate_path, dt1, dt2, prdt, integer_lis
     df.loc[dt2, prdt + '_snfr_total_area'] = get_total_area(arr_to_gdf,1)
     df.loc[dt2, prdt + '_snc_total_area'] = get_total_area(arr_to_gdf,2)
     df.loc[dt2, prdt + '_ice_total_area'] = get_total_area(arr_to_gdf,3)
+
+    # return arr_to_gdf
 
 #--------------------------------------------------------------------------------------------------------
 
