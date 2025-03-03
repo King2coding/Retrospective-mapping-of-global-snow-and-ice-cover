@@ -778,20 +778,17 @@ print('make time series plot of area extent - Figure 8')
 # Figure 8
 # plot_time_series(area_extent)
 
-plot_time_series_4x1(area_extent,'total_area_diff','diff')
+plot_time_series_4x1(area_extent,'total_area_diff','diff',False)
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
 # Figure S2
-plot_time_series_4x1(area_ext_reg_60n,'total_area_diff','diff')
+plot_time_series_4x1(area_ext_reg_60n,'total_area_diff','diff',False)
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_60N',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
-plot_time_series_4x1(px_cnt_60n,'px_cnt','px_cnt')
-
-plot_time_series_4x1(px_cnt_60n,'px_cnt_diff','diff')
 
 print('done')
 
@@ -807,6 +804,10 @@ px_cnt_60n.sort_index(inplace=True)
 px_cnt_60n =   get_px_cnt_diffs(px_cnt_60n)
 svnem_csv = '_'.join(['grid_population_analysis_60N',cde_run_dte])+ '.csv'
 px_cnt_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
+plot_time_series_4x1(px_cnt_60n,'px_cnt','px_cnt',True)
+
+plot_time_series_4x1(px_cnt_60n,'px_cnt_diff','diff',True)
 
 gc.collect()
 #%%

@@ -150,6 +150,8 @@ def plot_time_series_4x1(area_extent_df,plt_term, plt_type):
         # Show only January and July on the x-axis
         ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 7]))  # Major ticks for January and July
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))  # Format as "Jan 1988, Jul 1988"
+        if decforma == True:
+            ax.yaxis.set_major_formatter(FuncFormatter(make_scientific_formatter(2)))
         ax.grid(True)
 
         # Adding seasonal shading

@@ -645,7 +645,7 @@ def read_processed_files(filename):
 
 #--------------------------------------------------------------------------------------------------------
 def get_px_cnt_diffs(pxcnt_df):
-    df_clmns = [clmns for clmns in pxcnt_df.columns if not 'GMASI' in clmns] 
+    df_clmns = [clmns for clmns in pxcnt_df.columns if ( not 'GMASI' in clmns) and (not 'diff' in clmns)] 
     for clmn in df_clmns:
         if 'wtr' in clmn:
             gmasi_clmn = 'GMASI_wtr_px_cnt'
@@ -656,7 +656,7 @@ def get_px_cnt_diffs(pxcnt_df):
         elif 'ice' in clmn:
             gmasi_clmn = 'GMASI_ice_px_cnt'
 
-        pxcnt_df[clmn + '_diff'] = pxcnt_df[clmn] - pxcnt_df[gmasi_clmn]
+        pxcnt_df[clmn + '_diff'] = (pxcnt_df[clmn] - pxcnt_df[gmasi_clmn])/pxcnt_df[gmasi_clmn]
     return pxcnt_df
 #--------------------------------------------------------------------------------------------------------
 def get_area_extent_diffs(area_df):
