@@ -117,7 +117,7 @@ def plot_daily_percentage_mismatch(hit_miss_df):
 
 #---------------------------------------------------------------
 # Figure 8
-def plot_time_series_4x1(area_extent_df,plt_term, plt_type):
+def plot_time_series_4x1(area_extent_df,plt_term, plt_type,decforma):
     # Define colors for each model or dataset
     colors = ['orange', 'g', 'm', 'b','k']
 
