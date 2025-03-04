@@ -782,13 +782,15 @@ print('make time series plot of area extent - Figure 8')
 # Figure 8
 # plot_time_series(area_extent)
 
-plot_time_series_4x1(area_extent,'total_area_diff','diff',False)
+plot_time_series_4x1(area_extent,'total_area_diff','diff',
+                     False,'Percent bias in area extent [%]')
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_global',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
 # Figure S2
-plot_time_series_4x1(area_ext_reg_60n,'total_area_diff','diff',False)
+plot_time_series_4x1(area_ext_reg_60n,'total_area_diff','diff',
+                     False,'Percent bias in area extent [%]')
 svenme = '_'.join(['percentage_bias_in_extent_anomaly_60N',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
@@ -823,11 +825,14 @@ px_cnt_60n['season'] = px_cnt_60n['month'].apply(get_season)
 
 px_cnt_60n_winter = px_cnt_60n[px_cnt_60n['season'] == 'winter']
 
-plot_time_series_4x1(px_cnt_60n,'px_cnt','px_cnt',True)
+plot_time_series_4x1(px_cnt_60n,'px_cnt','px_cnt',
+                     True, 'Daily grid box count of estimated surface cover type')
 
-plot_time_series_4x1(px_cnt_60n,'px_cnt_diff','diff',True)
+plot_time_series_4x1(px_cnt_60n,'px_cnt_diff','diff',True, 
+                     'Daily grid box count of estimated surface cover type')
 
-plot_time_series_4x1(px_cnt_60n_winter,'px_cnt','px_cnt',True)
+plot_time_series_4x1(px_cnt_60n_winter,'px_cnt','px_cnt',True, 
+                     'Daily grid box count of estimated surface cover type')
 
 
 # Example usage:

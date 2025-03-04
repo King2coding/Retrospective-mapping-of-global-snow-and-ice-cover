@@ -44,7 +44,7 @@ def scientific_notation_formatter(x, pos):
 # Function to create a formatter function for scientific notation
 def make_scientific_formatter(decimals):
     """
-    Create a formatter function that formats tick labels in scientific notation with a base of 1e6.
+    Create a formatter function that formats tick labels in scientific notation with a base of 1e5 or 1e6.
     
     Parameters:
     decimals (int): The number of decimal places to use when rounding the tick labels.
@@ -53,8 +53,12 @@ def make_scientific_formatter(decimals):
     function: A formatter function for use with Matplotlib's FuncFormatter.
     """
     def scientific_notation_formatter(x, pos):
-        format_string = f'{{:.{decimals}f}}M'
-        return format_string.format(x / 1e6)
+        if abs(x) >= 1e6:
+            format_string = f'{{:.{decimals}f}}M'
+            return format_string.format(x / 1e6)
+        else:
+            format_string = f'{{:.{decimals}f}}K'
+            return format_string.format(x / 1e3)
     return scientific_notation_formatter
 #--------------------------------------------------------------------------
 
@@ -117,7 +121,7 @@ def plot_daily_percentage_mismatch(hit_miss_df):
 
 #---------------------------------------------------------------
 # Figure 8
-def plot_time_series_4x1(area_extent_df,plt_term, plt_type,decforma):
+def plot_time_series_4x1(plot_df,plt_term, plt_type,decforma,ylab):
     # Define colors for each model or dataset
     colors = ['orange', 'g', 'm', 'b','k']
 
@@ -127,7 +131,7 @@ def plot_time_series_4x1(area_extent_df,plt_term, plt_type,decforma):
         models = ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM']
 
     # Convert index to datetime if it isn't already
-    area_extent_df.index = pd.to_datetime(area_extent_df.index)
+    plot_df.index = pd.to_datetime(plot_df.index)
 
     # Creating subplots
     fig, axes = plt.subplots(4, 1, figsize=(15, 10), sharex=True, dpi=1000,
@@ -137,12 +141,12 @@ def plot_time_series_4x1(area_extent_df,plt_term, plt_type,decforma):
     # Plotting
     variables = ['wtr', 'snfr', 'snc', 'ice']
     titles = ['Water', 'Snow free', 'Snow cover', 'Ice']
-    lws = [1, 1.5, 3, 1, 1]
+    lws = [1, 1.5, 3, 1, 1.5]
     lss = ['-', '-.', ':', '-','--']
     for i, ax in enumerate(axes):
         var = variables[i]
         for model, lab, color, lw, ls in zip(models, models, colors, lws, lss):
-            ax.plot(area_extent_df.index, area_extent_df[f'{model}_{var}_{plt_term}'], 
+            ax.plot(plot_df.index, plot_df[f'{model}_{var}_{plt_term}'], 
                     label=lab, color=color, lw=lw, ls=ls)
 
        # Set titles and adjust axes
@@ -150,20 +154,20 @@ def plot_time_series_4x1(area_extent_df,plt_term, plt_type,decforma):
         # Show only January and July on the x-axis
         ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 7]))  # Major ticks for January and July
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))  # Format as "Jan 1988, Jul 1988"
-        # if decforma == True:
-        #     ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f'{x:.2e}'))
-            # ax.yaxis.set_major_formatter(FuncFormatter(make_scientific_formatter(2)))
+        if decforma == True:
+            # ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f'{x:.2e}'))
+            ax.yaxis.set_major_formatter(FuncFormatter(make_scientific_formatter(0)))
         ax.grid(True)
 
         # Adding seasonal shading
-        for year in range(area_extent_df.index.year.min(), area_extent_df.index.year.max() + 1):
+        for year in range(plot_df.index.year.min(), plot_df.index.year.max() + 1):
             winter_start = pd.Timestamp(year=year, month=12, day=1)
             winter_end = pd.Timestamp(year=year + 1, month=2, day=28)
             summer_start = pd.Timestamp(year=year, month=6, day=1)
             summer_end = pd.Timestamp(year=year, month=8, day=31)
 
             # Shade the January-February winter months of the first year
-            if year == area_extent_df.index.year.min():
+            if year == plot_df.index.year.min():
                 winter_start_ = pd.Timestamp(year=year, month=1, day=1)
                 winter_end_ = pd.Timestamp(year=year, month=2, day=28)
                 ax.axvspan(winter_start_, winter_end_, color='lightblue', alpha=0.3)  # Winter
@@ -179,11 +183,11 @@ def plot_time_series_4x1(area_extent_df,plt_term, plt_type,decforma):
 
     # Labels and legend
     fig.text(0.5, 0.04, 'Year', ha='center', va='center', fontsize=18)
-    fig.text(0.06, 0.5, 'Percent bias in area extent [%]', va='center', 
+    fig.text(0.04, 0.5, ylab, va='center', 
              rotation='vertical', fontsize=18)
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.02), 
-               ncol=4, columnspacing=1, frameon=False, fontsize=18)
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), 
+               ncol=5, columnspacing=1, frameon=False, fontsize=18)
 
     # Save or display
     # plt.show()
