@@ -150,8 +150,9 @@ def plot_time_series_4x1(area_extent_df,plt_term, plt_type,decforma):
         # Show only January and July on the x-axis
         ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 7]))  # Major ticks for January and July
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))  # Format as "Jan 1988, Jul 1988"
-        if decforma == True:
-            ax.yaxis.set_major_formatter(FuncFormatter(make_scientific_formatter(2)))
+        # if decforma == True:
+        #     ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f'{x:.2e}'))
+            # ax.yaxis.set_major_formatter(FuncFormatter(make_scientific_formatter(2)))
         ax.grid(True)
 
         # Adding seasonal shading
@@ -508,6 +509,45 @@ def plot_2d_hit_miss_map(cat_arr,area,clrmp,nbs):
     cbar_miss.ax.tick_params(size=0)
     cbar_miss.set_label('Miss [%]', rotation=0, labelpad=-40)
 
+#-----------------------------------------------------------------------------------
+def plot_snow_free_land_data(plot_df, year=None, endswith="snfr_px_cnt", ylabel="Pixel Count", ttle="Snow Free"):
+    """
+    Plot all columns that end with a specific suffix in the dataframe.
+    Plots the Snow Free Land Pixel Count Over Time for the winter months (Dec, Jan, Feb) of a specific year or all years.
+
+    Parameters:
+    plot_df (DataFrame): The DataFrame containing the pixel count data.
+    year (int, optional): The year for which to plot the data. If None, plots data for all years.
+    endswith (str): The suffix of the columns to plot.
+    ylabel (str): The label for the y-axis.
+    ttle (str): The title of the plot.
+    """
+    colors = ['orange', 'g', 'm', 'b', 'k']
+    models = ['ML-E', 'ML-EC', 'ML-ECC', 'CLIM', 'GMASI']
+    lws = [1, 1.5, 3, 1, 1]
+    lss = ['-', '-.', ':', '-', '--']
+
+    if year:
+        filtered_data = plot_df[(plot_df.index.year == year - 1) & (plot_df.index.month == 12) |
+                                (plot_df.index.year == year) & (plot_df.index.month.isin([1, 2]))]
+    else:
+        # Use all data
+        filtered_data = plot_df
+
+    # Plot the data
+    snfr_columns = [col for col in filtered_data.columns if col.endswith(endswith)]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for model, color, lw, ls in zip(models, colors, lws, lss):
+        column = f'{model}_{endswith}'
+        if column in snfr_columns:
+            ax.plot(filtered_data.index, filtered_data[column], label=model, color=color, lw=lw, ls=ls)
+
+    ax.set_title(f"{ttle} Land Over Time - Winter {year}" if year else f"{ttle} Land Over Time")
+    ax.set_xlabel("Date")
+    ax.set_ylabel(ylabel)
+    ax.legend(title="Methods")
+    ax.grid(True)
+    plt.show()
 #-----------------------------------------------------------------------------------
 def plot_time_series(area_extent_df):
     # Define colors for each model or dataset

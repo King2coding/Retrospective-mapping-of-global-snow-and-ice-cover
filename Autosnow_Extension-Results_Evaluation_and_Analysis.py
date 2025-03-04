@@ -129,7 +129,7 @@ tropical_mask = (lats >= -25) & (lats <= 25) & (lsm == 1)
 clim_nmeprt='CLIM-approach_estimate_based_on_1992_2022_Autosnow_clim_subsetted_by_airTemp'
 
 #%%
-
+# fucntions
 #-----------------------------------------------------------
 def parallel_process_files_(file_paths, max_workers=20):
 
@@ -731,7 +731,7 @@ desired_order = [
 ]
 
 filter_items = [clmn for clmn in area_extent.columns if 'diff' in clmn]
-
+# area_ext_reg_60n = pd.read_csv(os.path.join(path_to_put_df,'area_extent_60N_analysis_20250302.csv'),index_col=0)
 area_extent.index = pd.to_datetime(area_extent.index)
 area_extent.sort_index(inplace=True)
 area_extent = get_area_extent_diffs(area_extent)
@@ -744,6 +744,7 @@ area_ext_reg_60n = get_area_extent_diffs(area_ext_reg_60n)
 svnem_csv = '_'.join(['area_extent_60N_analysis',cde_run_dte])+ '.csv'
 area_ext_reg_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
+#%%
 # Table 5
 area_extent_anom_yearly_avg = pd.DataFrame(area_extent[filter_items].mean(),
                                            columns=['mean'])
@@ -771,6 +772,9 @@ area_ext_reg_60n['season'] = area_ext_reg_60n['month'].apply(get_season)
 area_ext_reg_60n_seasonal_mean = area_ext_reg_60n.groupby('season')[filter_items].mean()[desired_order]
 
 area_ext_reg_60n_seasonal_mean.to_csv(os.path.join(path_to_put_df,svnem_csv))
+
+area_ext_60n_winter = area_ext_reg_60n[area_ext_reg_60n['season'] == 'winter']
+
 #----------------------------------------------------------------------------------------
 print('make time series plot of area extent - Figure 8')
 
@@ -790,6 +794,13 @@ plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
 
+plot_snow_free_land_data(area_ext_reg_60n, 1990,"snfr_total_area", 
+                         'area_extent', 'Snow Free')
+plt.ylabel("Pixel Count")
+plt.legend(title="Methods")
+plt.grid(True)
+plt.show()
+
 print('done')
 
 #%%
@@ -799,15 +810,33 @@ px_cnt =   get_px_cnt_diffs(px_cnt)
 svnem_csv = '_'.join(['grid_population_analysis',cde_run_dte])+ '.csv'
 px_cnt.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
+# px_cnt_60n = pd.read_csv(os.path.join(path_to_put_df,'grid_population_analysis_60N_20250302.csv'),index_col=0)
+
 px_cnt_60n.index = pd.to_datetime(px_cnt_60n.index)
 px_cnt_60n.sort_index(inplace=True)
 px_cnt_60n =   get_px_cnt_diffs(px_cnt_60n)
 svnem_csv = '_'.join(['grid_population_analysis_60N',cde_run_dte])+ '.csv'
 px_cnt_60n.to_csv(os.path.join(path_to_put_df,svnem_csv))
 
+px_cnt_60n['month'] = px_cnt_60n.index.month
+px_cnt_60n['season'] = px_cnt_60n['month'].apply(get_season)
+
+px_cnt_60n_winter = px_cnt_60n[px_cnt_60n['season'] == 'winter']
+
 plot_time_series_4x1(px_cnt_60n,'px_cnt','px_cnt',True)
 
 plot_time_series_4x1(px_cnt_60n,'px_cnt_diff','diff',True)
+
+plot_time_series_4x1(px_cnt_60n_winter,'px_cnt','px_cnt',True)
+
+
+# Example usage:
+plot_snow_free_land_data(px_cnt_60n, year=None, endswith = "snfr_px_cnt", 
+                          ylabel= 'Pixel Count', ttle = 'Snow Free')
+# plt.ylabel("Pixel Count")
+# plt.legend(title="Methods")
+# plt.grid(True)
+# plt.show()
 
 gc.collect()
 #%%

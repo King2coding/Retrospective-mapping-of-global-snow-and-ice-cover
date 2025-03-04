@@ -369,7 +369,27 @@ def calculate_seasonal_means(df, columns, season):
     std_values = season_df[columns].std()
     
     return mean_values, std_values
-#---------------------------------------------------
+#--------------------------------------------------------------------------------------------------------
+# compute hit/mis counts
+def calculate_hits_miss(predicted, observed, integer_list, kind):
+    """
+    Calculate hits for each integer in the list based on predicted and observed values.
+
+    Parameters:
+    - predicted: 1D array representing predicted values.
+    - observed: 1D array representing observed values.
+    - integer_list: List of integers (0, 1, 2, 3, etc.).
+    - kind: hits or misses is computed
+
+    Returns:
+    - hits: A 1D array containing the count of hits for each integer.
+    """
+    if kind == 'hit':
+        hits = np.sum([np.sum((observed == i) & (predicted == i)) for i in integer_list])
+        return hits
+    elif kind == 'miss':
+        miss = np.sum([np.sum((observed == i) & (predicted != i)) for i in integer_list])
+        return miss
 #-----------------------------------------------------------------------------------------
 def populate_df_count(df, count_dict, dt, prdt):
     df.loc[dt, prdt +'_wtr_px_cnt'] = count_dict[0]
@@ -554,28 +574,6 @@ def correct_pixel(values):
         return 3  # Keep as ice to preserve small water bodies covered with ice
     return center_pixel
 
-#--------------------------------------------------------------------------------------------------------
-
-# compute hit/mis counts
-def calculate_hits_miss(predicted, observed, integer_list, kind):
-    """
-    Calculate hits for each integer in the list based on predicted and observed values.
-
-    Parameters:
-    - predicted: 1D array representing predicted values.
-    - observed: 1D array representing observed values.
-    - integer_list: List of integers (0, 1, 2, 3, etc.).
-    - kind: hits or misses is computed
-
-    Returns:
-    - hits: A 1D array containing the count of hits for each integer.
-    """
-    if kind == 'hit':
-        hits = np.sum([np.sum((observed == i) & (predicted == i)) for i in integer_list])
-        return hits
-    elif kind == 'miss':
-        miss = np.sum([np.sum((observed == i) & (predicted != i)) for i in integer_list])
-        return miss
 #--------------------------------------------------------------------------------------------------------
 
 def prepare_rf_input(array_list, x_shape, y_shape):
