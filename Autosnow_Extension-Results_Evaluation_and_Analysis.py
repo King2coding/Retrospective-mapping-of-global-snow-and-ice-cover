@@ -131,87 +131,87 @@ clim_nmeprt='CLIM-approach_estimate_based_on_1992_2022_Autosnow_clim_subsetted_b
 #%%
 # fucntions
 #-----------------------------------------------------------
-def parallel_process_files_(file_paths, max_workers=20):
+# def parallel_process_files_(file_paths, max_workers=20):
 
-    """
-    Parallel process a list of file paths using ThreadPoolExecutor.
+#     """
+#     Parallel process a list of file paths using ThreadPoolExecutor.
     
-    Parameters:
-    - file_paths (list): List of file paths to process.
-    - max_workers (int): Number of worker threads to spawn.
+#     Parameters:
+#     - file_paths (list): List of file paths to process.
+#     - max_workers (int): Number of worker threads to spawn.
 
-    Returns:
-    - results (list): List of results from processing each file.
-    """
-    results = []
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
+#     Returns:
+#     - results (list): List of results from processing each file.
+#     """
+#     results = []
+#     with ThreadPoolExecutor(max_workers=max_workers) as executor:
+#         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
-        for i, future in enumerate(as_completed(future_to_file)):
-            file_path = future_to_file[future]
-            try:
-                result = future.result()
-                results.append(result)  # Collect results for aggregation
-                if (i + 1) % 500 == 0:
-                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
-            except Exception as exc:
-                print(f'{file_path} generated an exception: {exc}')
+#         for i, future in enumerate(as_completed(future_to_file)):
+#             file_path = future_to_file[future]
+#             try:
+#                 result = future.result()
+#                 results.append(result)  # Collect results for aggregation
+#                 if (i + 1) % 500 == 0:
+#                     print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
+#             except Exception as exc:
+#                 print(f'{file_path} generated an exception: {exc}')
     
-    return results
-#-----------------------------------------------------------
+#     return results
+# #-----------------------------------------------------------
 
-def parallel_process_files(file_paths, max_workers=20):
-    """
-    Parallel process a list of file paths using ProcessPoolExecutor.
+# def parallel_process_files(file_paths, max_workers=20):
+#     """
+#     Parallel process a list of file paths using ProcessPoolExecutor.
     
-    Parameters:
-    - file_paths (list): List of file paths to process.
-    - max_workers (int): Number of worker processes to spawn.
+#     Parameters:
+#     - file_paths (list): List of file paths to process.
+#     - max_workers (int): Number of worker processes to spawn.
 
-    Returns:
-    - results (list): List of results from processing each file.
-    """
-    results = []
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
+#     Returns:
+#     - results (list): List of results from processing each file.
+#     """
+#     results = []
+#     with ProcessPoolExecutor(max_workers=max_workers) as executor:
+#         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
-        for i, future in enumerate(as_completed(future_to_file)):
-            file_path = future_to_file[future]
-            try:
-                result = future.result()
-                results.append(result)  # Collect results for aggregation
-                if (i + 1) % 500 == 0:
-                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
-            except Exception as exc:
-                print(f'{file_path} generated an exception: {exc}')
+#         for i, future in enumerate(as_completed(future_to_file)):
+#             file_path = future_to_file[future]
+#             try:
+#                 result = future.result()
+#                 results.append(result)  # Collect results for aggregation
+#                 if (i + 1) % 500 == 0:
+#                     print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
+#             except Exception as exc:
+#                 print(f'{file_path} generated an exception: {exc}')
     
-    return results
+#     return results
 
-    """
-    Parallel process a list of file paths using ProcessPoolExecutor.
+#     """
+#     Parallel process a list of file paths using ProcessPoolExecutor.
     
-    Parameters:
-    - file_paths (list): List of file paths to process.
-    - max_workers (int): Number of worker processes to spawn.
+#     Parameters:
+#     - file_paths (list): List of file paths to process.
+#     - max_workers (int): Number of worker processes to spawn.
 
-    Returns:
-    - results (list): List of results from processing each file.
-    """
-    results = []
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
+#     Returns:
+#     - results (list): List of results from processing each file.
+#     """
+#     results = []
+#     with ProcessPoolExecutor(max_workers=max_workers) as executor:
+#         future_to_file = {executor.submit(process_file, file_path): file_path for file_path in file_paths}
         
-        for i, future in enumerate(as_completed(future_to_file)):
-            file_path = future_to_file[future]
-            try:
-                result = future.result()
-                results.append(result)  # Collect results for aggregation
-                if (i + 1) % 500 == 0:
-                    print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
-            except Exception as exc:
-                print(f'{file_path} generated an exception: {exc}')
+#         for i, future in enumerate(as_completed(future_to_file)):
+#             file_path = future_to_file[future]
+#             try:
+#                 result = future.result()
+#                 results.append(result)  # Collect results for aggregation
+#                 if (i + 1) % 500 == 0:
+#                     print(f'Completed {i+1}/{len(file_paths)}: {file_path}')
+#             except Exception as exc:
+#                 print(f'{file_path} generated an exception: {exc}')
     
-    return results
+#     return results
 
 #%%
 # area_ext_reg_60n_cpy = area_ext_reg_60n.copy()
