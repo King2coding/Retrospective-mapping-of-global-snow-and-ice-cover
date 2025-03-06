@@ -832,8 +832,11 @@ svenme = '_'.join(['grid_box_count_60N',cde_run_dte]) + '.png'
 plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
 plt.close()
 
+svenme = '_'.join(['grid_box_count_diffs_60N',cde_run_dte]) + '.png'
 plot_time_series_4x1(px_cnt_60n,'px_cnt_diff','diff',True, 
                      'Daily differences in grid box count of estimated surface cover type')
+plt.savefig(os.path.join(path_to_put_plots,svenme),bbox_inches='tight')
+plt.close()
 
 plot_time_series_4x1(px_cnt_60n_winter,'px_cnt','px_cnt',True, 
                      'Daily grid box count of estimated surface cover type')

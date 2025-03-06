@@ -183,7 +183,7 @@ def plot_time_series_4x1(plot_df,plt_term, plt_type,decforma,ylab):
 
     # Labels and legend
     fig.text(0.5, 0.04, 'Year', ha='center', va='center', fontsize=18)
-    fig.text(0.04, 0.5, ylab, va='center', 
+    fig.text(0.06, 0.5, ylab, va='center', 
              rotation='vertical', fontsize=18)
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), 
