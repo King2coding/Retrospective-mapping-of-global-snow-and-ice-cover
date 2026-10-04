@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "Please cite the associated Earth and Space Science article and the published dataset when using this research code."
+title: "Retrospective mapping of global snow and ice cover"
+type: software
+authors:
+  - family-names: "Kumah"
+    given-names: "Kwabena Kingsley"
+    orcid: "https://orcid.org/0000-0001-6865-0665"
+  - family-names: "Zandi"
+    given-names: "Omid"
+    orcid: "https://orcid.org/0000-0002-1968-7354"
+  - family-names: "Behrangi"
+    given-names: "Ali"
+    orcid: "https://orcid.org/0000-0001-7594-8793"
+repository-code: "https://github.com/King2coding/Retrospective-mapping-of-global-snow-and-ice-cover"
+preferred-citation:
+  type: article
+  title: "Retrospective Mapping of Global Snow and Ice Cover Beyond the Satellite Observational Era"
+  authors:
+    - family-names: "Kumah"
+      given-names: "Kingsley K."
+    - family-names: "Zandi"
+      given-names: "Omid"
+    - family-names: "Behrangi"
+      given-names: "Ali"
+  journal: "Earth and Space Science"
+  volume: 12
+  issue: 5
+  year: 2025
+  doi: "10.1029/2024EA004171"
